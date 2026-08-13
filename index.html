@@ -336,7 +336,7 @@
     transform: translateY(-2px);
   }
 
-  /* SYNC / EXPORT */
+  /* SYNC STATUS */
   .sync-wrap{
     text-align:center;
     margin-bottom: 22px;
@@ -352,22 +352,6 @@
     border-radius: 999px;
     margin-bottom: 10px;
   }
-  .sync-btn{
-    font-family:'Quicksand', sans-serif;
-    font-weight:700;
-    font-size: 13.5px;
-    color: #1f4a3d;
-    background: var(--mint);
-    border: 2px solid var(--mint-deep);
-    padding: 10px 20px;
-    border-radius: 999px;
-    cursor:pointer;
-    transition: transform 0.2s ease, background 0.2s ease;
-  }
-  .sync-btn:hover{
-    background: var(--mint-deep);
-    transform: translateY(-2px);
-  }
   .sync-hint{
     max-width: 360px;
     margin: 8px auto 0;
@@ -376,6 +360,86 @@
     font-weight:600;
     line-height:1.4;
   }
+
+  /* LOCK SCREEN */
+  body.app-locked > *:not(.lock-overlay){
+    filter: blur(14px);
+    pointer-events: none;
+    user-select: none;
+  }
+  .lock-overlay{
+    position:fixed;
+    inset:0;
+    z-index: 99999;
+    display:none;
+    align-items:center;
+    justify-content:center;
+    padding: 20px;
+    background:
+      radial-gradient(circle at 8% 10%, #FFF1DA 0%, transparent 40%),
+      radial-gradient(circle at 92% 6%, #E7F7F1 0%, transparent 38%),
+      radial-gradient(circle at 85% 92%, #F5E9FF 0%, transparent 42%),
+      var(--cream);
+  }
+  .lock-overlay.show{ display:flex; }
+  .lock-card{
+    background: var(--panel);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow);
+    padding: 34px 28px;
+    text-align:center;
+    width: 100%;
+    max-width: 300px;
+  }
+  .lock-emoji{ font-size: 34px; margin-bottom: 8px; }
+  .lock-card h2{
+    font-family:'Baloo 2', sans-serif;
+    font-size: 20px;
+    margin: 0 0 18px;
+  }
+  .lock-input{
+    width:100%;
+    text-align:center;
+    letter-spacing: 10px;
+    font-size: 22px;
+    font-family:'Quicksand', sans-serif;
+    font-weight:700;
+    padding: 12px 10px;
+    border-radius: 14px;
+    border: 2px solid var(--lavender-line);
+    background: var(--lavender);
+    color: var(--plum);
+    outline:none;
+  }
+  .lock-input:focus{ border-color: var(--dandelion-deep); }
+  .lock-input.shake{ animation: lock-shake 0.4s ease; }
+  @keyframes lock-shake{
+    0%,100%{ transform: translateX(0); }
+    25%{ transform: translateX(-8px); }
+    75%{ transform: translateX(8px); }
+  }
+  .lock-error{
+    min-height: 18px;
+    font-size: 12.5px;
+    font-weight:700;
+    color: var(--coral, #FF7A70);
+    margin-top: 8px;
+  }
+  .lock-btn{
+    width:100%;
+    margin-top: 12px;
+    font-family:'Quicksand', sans-serif;
+    font-weight:700;
+    font-size: 14.5px;
+    padding: 12px 14px;
+    border-radius: 999px;
+    border:none;
+    cursor:pointer;
+    background: linear-gradient(135deg, var(--dandelion), var(--dandelion-deep));
+    color: #4A3510;
+    transition: transform 0.15s ease;
+  }
+  .lock-btn:hover{ transform: translateY(-1px); }
 
   /* MODAL */
   .modal-overlay{
@@ -479,7 +543,18 @@
 </style>
 </head>
 <body>
-<script type="application/json" id="seedData">[]</script>
+
+<div class="lock-overlay" id="lockOverlay">
+  <div class="lock-card">
+    <div class="lock-emoji">🔒</div>
+    <h2>Enter Code</h2>
+    <form id="lockForm" autocomplete="off">
+      <input type="password" id="lockInput" class="lock-input" inputmode="numeric" pattern="[0-9]*" maxlength="5" autocomplete="off" placeholder="•••••" required>
+      <div class="lock-error" id="lockError"></div>
+      <button type="submit" class="lock-btn">Unlock</button>
+    </form>
+  </div>
+</div>
 
 <div class="wrap">
   <header class="top">
@@ -507,7 +582,7 @@
       <div class="w-value" id="weekValue">0h</div>
     </div>
     <div class="widget" id="avgWidget">
-      <div class="w-label">Avg Weekly</div>
+      <div class="w-label">Avg Weekly (Year)</div>
       <div class="w-value" id="avgValue">0h</div>
     </div>
     <div class="widget log-widget" id="logOpenBtn">
@@ -527,8 +602,7 @@
 
   <div class="sync-wrap">
     <div class="sync-badge" id="syncBadge">💾 Saved on this device only</div>
-    <button type="button" class="sync-btn" id="exportBtn">⬇️ Save copy for another device</button>
-    <div class="sync-hint" id="syncHint">Downloads this file with your current entries baked in — send that copy (and archive.html) to sync another device.</div>
+    <div class="sync-hint" id="syncHint">Add a Firebase config in the code to sync across devices.</div>
   </div>
 
   <footer class="note">Goal: 90 hours · resets automatically each month</footer>
@@ -573,11 +647,11 @@
   // ============================================================
   const firebaseConfig = {
     apiKey: "AIzaSyB6YfMs93UjoVAj6Jd0OsOP2FXLf9mAL7Y",
-	authDomain: "beepaboop600.firebaseapp.com",
-	projectId: "beepaboop600",
-	storageBucket: "beepaboop600.firebasestorage.app",
-	messagingSenderId: "341983136727",
-	appId: "1:341983136727:web:6364e709fe1737e3c75992"
+    authDomain: "beepaboop600.firebaseapp.com",
+    projectId: "beepaboop600",
+    storageBucket: "beepaboop600.firebasestorage.app",
+    messagingSenderId: "341983136727",
+    appId: "1:341983136727:web:6364e709fe1737e3c75992"
   };
   // A "folder name" for your data in the shared database. Change this to
   // any string only you know if you want a little extra obscurity.
@@ -585,7 +659,6 @@
   // ============================================================
 
   const STORAGE_KEY = 'hourTrackerEntries_v1';
-  const DELETED_KEY = 'hourTrackerDeleted_v1';
   const GOAL = 90;
   const RING_R = 92;
   const RING_CIRC = 2 * Math.PI * RING_R;
@@ -603,37 +676,9 @@
   function writeLocal(list){
     localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
   }
-  function readDeletedIds(){
-    try{
-      const raw = localStorage.getItem(DELETED_KEY);
-      return raw ? JSON.parse(raw) : [];
-    }catch(e){ return []; }
-  }
-  function readSeedEntries(){
-    try{
-      const el = document.getElementById('seedData');
-      if(!el) return [];
-      const parsed = JSON.parse(el.textContent || '[]');
-      return Array.isArray(parsed) ? parsed : [];
-    }catch(e){ return []; }
-  }
-  // Local-only fallback: merges any entries embedded in this file (from a
-  // "Save copy for another device" export) into localStorage.
+  function readSeedEntries(){ return []; } // reserved (no longer used)
   function mergedLocal(){
-    const ls = readLocal();
-    const seed = readSeedEntries();
-    if(seed.length){
-      const deleted = new Set(readDeletedIds());
-      const known = new Set(ls.map(e => String(e.id)));
-      let changed = false;
-      seed.forEach(e => {
-        if(!deleted.has(String(e.id)) && !known.has(String(e.id))){
-          ls.push(e); known.add(String(e.id)); changed = true;
-        }
-      });
-      if(changed) writeLocal(ls);
-    }
-    return ls;
+    return readLocal();
   }
 
   function setSyncBadge(){
@@ -642,34 +687,13 @@
     if(!badge) return;
     if(cloudEnabled){
       badge.textContent = '☁️ Synced across devices';
-      hint.textContent = 'Changes save to the cloud automatically. This button is just for an offline backup copy.';
+      hint.textContent = '';
     } else {
       badge.textContent = '💾 Saved on this device only';
-      hint.textContent = 'Add a Firebase config in the code to sync across devices. Until then, use this to move entries to another device.';
+      hint.textContent = 'Add a Firebase config in the code to sync across devices.';
     }
   }
 
-  // Downloads a fresh copy of this HTML file with the current entries baked
-  // into the embedded seed data block — useful as a manual backup, or to
-  // move entries to another device if cloud sync isn't configured.
-  function exportUpdatedFile(){
-    const seedEl = document.getElementById('seedData');
-    if(seedEl) seedEl.textContent = JSON.stringify(entries);
-
-    if(typeof closeModal === 'function') closeModal();
-    if(typeof hideTooltip === 'function') hideTooltip();
-
-    const html = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
-    const blob = new Blob([html], { type: 'text/html' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'index.html';
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(url);
-  }
   function fmtNum(n){
     n = Math.round(n * 100) / 100;
     return (n % 1 === 0) ? String(n) : String(n.toFixed(2)).replace(/0+$/,'').replace(/\.$/,'');
@@ -711,6 +735,29 @@
     e.setDate(e.getDate() + 6);
     e.setHours(23,59,59,999);
     return e;
+  }
+
+  // Average hours per week, across the whole current year, counting only
+  // the span from the first logged week through the last logged week
+  // (no padding from empty weeks before the first log or after the last).
+  function computeYearlyWeeklyAvg(all){
+    const yearEntries = all.filter(e => new Date(e.date + 'T00:00:00').getFullYear() === curYear);
+    if(yearEntries.length === 0) return 0;
+
+    let minDate = null, maxDate = null;
+    yearEntries.forEach(e => {
+      const d = new Date(e.date + 'T00:00:00');
+      if(!minDate || d < minDate) minDate = d;
+      if(!maxDate || d > maxDate) maxDate = d;
+    });
+
+    const firstWeekStart = startOfWeek(minDate);
+    const lastWeekStart = startOfWeek(maxDate);
+    const msPerWeek = 7 * 24 * 60 * 60 * 1000;
+    const weekSpan = Math.round((lastWeekStart - firstWeekStart) / msPerWeek) + 1;
+
+    const totalHours = yearEntries.reduce((s,e) => s + Number(e.hours), 0);
+    return totalHours / weekSpan;
   }
 
   function render(){
@@ -757,9 +804,7 @@
     weekValue.textContent = `${fmtNum(weekTotal)}h`;
     weekWidget.classList.toggle('alert', weekTotal > 29);
 
-    const dayOfMonth = now.getDate();
-    const weeksElapsed = Math.max(1, Math.ceil(dayOfMonth / 7));
-    const avgWeekly = monthTotal / weeksElapsed;
+    const avgWeekly = computeYearlyWeeklyAvg(all);
     const avgValue = document.getElementById('avgValue');
     const avgWidget = document.getElementById('avgWidget');
     avgValue.textContent = `${fmtNum(avgWeekly)}h`;
@@ -925,8 +970,6 @@
     }
   });
 
-  document.getElementById('exportBtn').addEventListener('click', exportUpdatedFile);
-
   // ---- Cloud sync init ----
   async function initSync(){
     const configured = !!(firebaseConfig.apiKey && firebaseConfig.projectId);
@@ -974,7 +1017,49 @@
     setSyncBadge();
   }
 
-  initSync();
+  // ---- Lock screen ----
+  // Change this to your own 5-digit code.
+  const ACCESS_CODE = '83364';
+  const UNLOCK_KEY = 'hourTrackerUnlocked_v1';
+
+  function showLock(){
+    document.body.classList.add('app-locked');
+    document.getElementById('lockOverlay').classList.add('show');
+    const input = document.getElementById('lockInput');
+    input.value = '';
+    setTimeout(() => input.focus(), 50);
+  }
+  function hideLock(){
+    document.body.classList.remove('app-locked');
+    document.getElementById('lockOverlay').classList.remove('show');
+  }
+  function attemptUnlock(){
+    const input = document.getElementById('lockInput');
+    const err = document.getElementById('lockError');
+    if(input.value.trim() === ACCESS_CODE){
+      sessionStorage.setItem(UNLOCK_KEY, '1');
+      err.textContent = '';
+      hideLock();
+      initSync();
+    } else {
+      err.textContent = 'Incorrect code';
+      input.value = '';
+      input.classList.remove('shake');
+      void input.offsetWidth; // restart animation
+      input.classList.add('shake');
+      input.focus();
+    }
+  }
+  document.getElementById('lockForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    attemptUnlock();
+  });
+
+  if(sessionStorage.getItem(UNLOCK_KEY) === '1'){
+    initSync();
+  } else {
+    showLock();
+  }
 </script>
 </body>
 </html>

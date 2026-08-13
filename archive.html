@@ -93,22 +93,6 @@
     text-align:center;
     margin-bottom: 26px;
   }
-  .sync-btn{
-    font-family:'Quicksand', sans-serif;
-    font-weight:700;
-    font-size: 13.5px;
-    color: #1f4a3d;
-    background: var(--mint);
-    border: 2px solid var(--mint-deep);
-    padding: 10px 20px;
-    border-radius: 999px;
-    cursor:pointer;
-    transition: transform 0.2s ease, background 0.2s ease;
-  }
-  .sync-btn:hover{
-    background: var(--mint-deep);
-    transform: translateY(-2px);
-  }
   .sync-hint{
     max-width: 360px;
     margin: 8px auto 0;
@@ -117,6 +101,86 @@
     font-weight:600;
     line-height:1.4;
   }
+
+  /* LOCK SCREEN */
+  body.app-locked > *:not(.lock-overlay){
+    filter: blur(14px);
+    pointer-events: none;
+    user-select: none;
+  }
+  .lock-overlay{
+    position:fixed;
+    inset:0;
+    z-index: 99999;
+    display:none;
+    align-items:center;
+    justify-content:center;
+    padding: 20px;
+    background:
+      radial-gradient(circle at 8% 10%, #FFF1DA 0%, transparent 40%),
+      radial-gradient(circle at 92% 6%, #E7F7F1 0%, transparent 38%),
+      radial-gradient(circle at 85% 92%, #F5E9FF 0%, transparent 42%),
+      var(--cream);
+  }
+  .lock-overlay.show{ display:flex; }
+  .lock-card{
+    background: var(--panel);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow);
+    padding: 34px 28px;
+    text-align:center;
+    width: 100%;
+    max-width: 300px;
+  }
+  .lock-emoji{ font-size: 34px; margin-bottom: 8px; }
+  .lock-card h2{
+    font-family:'Baloo 2', sans-serif;
+    font-size: 20px;
+    margin: 0 0 18px;
+  }
+  .lock-input{
+    width:100%;
+    text-align:center;
+    letter-spacing: 10px;
+    font-size: 22px;
+    font-family:'Quicksand', sans-serif;
+    font-weight:700;
+    padding: 12px 10px;
+    border-radius: 14px;
+    border: 2px solid var(--lavender-line);
+    background: var(--lavender);
+    color: var(--plum);
+    outline:none;
+  }
+  .lock-input:focus{ border-color: var(--dandelion-deep); }
+  .lock-input.shake{ animation: lock-shake 0.4s ease; }
+  @keyframes lock-shake{
+    0%,100%{ transform: translateX(0); }
+    25%{ transform: translateX(-8px); }
+    75%{ transform: translateX(8px); }
+  }
+  .lock-error{
+    min-height: 18px;
+    font-size: 12.5px;
+    font-weight:700;
+    color: #C6483C;
+    margin-top: 8px;
+  }
+  .lock-btn{
+    width:100%;
+    margin-top: 12px;
+    font-family:'Quicksand', sans-serif;
+    font-weight:700;
+    font-size: 14.5px;
+    padding: 12px 14px;
+    border-radius: 999px;
+    border:none;
+    cursor:pointer;
+    background: linear-gradient(135deg, var(--dandelion), var(--dandelion-deep));
+    color: #4A3510;
+    transition: transform 0.15s ease;
+  }
+  .lock-btn:hover{ transform: translateY(-1px); }
 
   .month-block{
     background: var(--panel);
@@ -225,7 +289,18 @@
 </style>
 </head>
 <body>
-<script type="application/json" id="seedData">[]</script>
+
+<div class="lock-overlay" id="lockOverlay">
+  <div class="lock-card">
+    <div class="lock-emoji">🔒</div>
+    <h2>Enter Code</h2>
+    <form id="lockForm" autocomplete="off">
+      <input type="password" id="lockInput" class="lock-input" inputmode="numeric" pattern="[0-9]*" maxlength="5" autocomplete="off" placeholder="•••••" required>
+      <div class="lock-error" id="lockError"></div>
+      <button type="submit" class="lock-btn">Unlock</button>
+    </form>
+  </div>
+</div>
 
 <div class="wrap">
   <div class="top-row">
@@ -237,8 +312,7 @@
 
   <div class="sync-wrap">
     <div class="sync-badge" id="syncBadge">💾 Saved on this device only</div>
-    <button type="button" class="sync-btn" id="exportBtn">⬇️ Save copy for another device</button>
-    <div class="sync-hint" id="syncHint">Downloads this file with your current entries baked in — send that copy (and index.html) to sync another device.</div>
+    <div class="sync-hint" id="syncHint">Add a Firebase config in the code to sync across devices.</div>
   </div>
 
   <div id="archiveContent"></div>
@@ -251,11 +325,11 @@
   // ============================================================
   const firebaseConfig = {
     apiKey: "AIzaSyB6YfMs93UjoVAj6Jd0OsOP2FXLf9mAL7Y",
-	authDomain: "beepaboop600.firebaseapp.com",
-	projectId: "beepaboop600",
-	storageBucket: "beepaboop600.firebasestorage.app",
-	messagingSenderId: "341983136727",
-	appId: "1:341983136727:web:6364e709fe1737e3c75992"
+    authDomain: "beepaboop600.firebaseapp.com",
+    projectId: "beepaboop600",
+    storageBucket: "beepaboop600.firebasestorage.app",
+    messagingSenderId: "341983136727",
+    appId: "1:341983136727:web:6364e709fe1737e3c75992"
   };
   const SYNC_KEY = "my-hours-tracker";
   // ============================================================
@@ -286,29 +360,8 @@
   function saveDeletedIds(ids){
     localStorage.setItem(DELETED_KEY, JSON.stringify(ids));
   }
-  function readSeedEntries(){
-    try{
-      const el = document.getElementById('seedData');
-      if(!el) return [];
-      const parsed = JSON.parse(el.textContent || '[]');
-      return Array.isArray(parsed) ? parsed : [];
-    }catch(e){ return []; }
-  }
   function mergedLocal(){
-    const ls = readLocal();
-    const seed = readSeedEntries();
-    if(seed.length){
-      const deleted = new Set(readDeletedIds());
-      const known = new Set(ls.map(e => String(e.id)));
-      let changed = false;
-      seed.forEach(e => {
-        if(!deleted.has(String(e.id)) && !known.has(String(e.id))){
-          ls.push(e); known.add(String(e.id)); changed = true;
-        }
-      });
-      if(changed) writeLocal(ls);
-    }
-    return ls;
+    return readLocal();
   }
 
   function setSyncBadge(){
@@ -317,31 +370,13 @@
     if(!badge) return;
     if(cloudEnabled){
       badge.textContent = '☁️ Synced across devices';
-      hint.textContent = 'Changes save to the cloud automatically. This button is just for an offline backup copy.';
+      hint.textContent = '';
     } else {
       badge.textContent = '💾 Saved on this device only';
-      hint.textContent = 'Add a Firebase config in the code to sync across devices. Until then, use this to move entries to another device.';
+      hint.textContent = 'Add a Firebase config in the code to sync across devices.';
     }
   }
 
-  // Downloads a fresh copy of this HTML file with the current entries baked
-  // into the embedded seed data block — useful as a manual backup, or to
-  // move entries to another device if cloud sync isn't configured.
-  function exportUpdatedFile(){
-    const seedEl = document.getElementById('seedData');
-    if(seedEl) seedEl.textContent = JSON.stringify(entries);
-
-    const html = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
-    const blob = new Blob([html], { type: 'text/html' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'archive.html';
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(url);
-  }
   function fmtNum(n){
     n = Math.round(n * 100) / 100;
     return (n % 1 === 0) ? String(n) : String(n.toFixed(2)).replace(/0+$/,'').replace(/\.$/,'');
@@ -428,8 +463,6 @@
     renderArchive();
   });
 
-  document.getElementById('exportBtn').addEventListener('click', exportUpdatedFile);
-
   function escapeHtml(str){
     const div = document.createElement('div');
     div.textContent = str;
@@ -481,7 +514,49 @@
     setSyncBadge();
   }
 
-  initSync();
+  // ---- Lock screen ----
+  // Change this to your own 5-digit code (must match index.html).
+  const ACCESS_CODE = '83364';
+  const UNLOCK_KEY = 'hourTrackerUnlocked_v1';
+
+  function showLock(){
+    document.body.classList.add('app-locked');
+    document.getElementById('lockOverlay').classList.add('show');
+    const input = document.getElementById('lockInput');
+    input.value = '';
+    setTimeout(() => input.focus(), 50);
+  }
+  function hideLock(){
+    document.body.classList.remove('app-locked');
+    document.getElementById('lockOverlay').classList.remove('show');
+  }
+  function attemptUnlock(){
+    const input = document.getElementById('lockInput');
+    const err = document.getElementById('lockError');
+    if(input.value.trim() === ACCESS_CODE){
+      sessionStorage.setItem(UNLOCK_KEY, '1');
+      err.textContent = '';
+      hideLock();
+      initSync();
+    } else {
+      err.textContent = 'Incorrect code';
+      input.value = '';
+      input.classList.remove('shake');
+      void input.offsetWidth; // restart animation
+      input.classList.add('shake');
+      input.focus();
+    }
+  }
+  document.getElementById('lockForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    attemptUnlock();
+  });
+
+  if(sessionStorage.getItem(UNLOCK_KEY) === '1'){
+    initSync();
+  } else {
+    showLock();
+  }
 </script>
 </body>
 </html>
