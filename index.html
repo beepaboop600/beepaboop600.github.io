@@ -1,10 +1,11 @@
 <!DOCTYPE html>
-<html lang="en"><head>
+<html lang="en">
+<head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Hours Tracker</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&amp;family=Quicksand:wght@500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet">
 <style>
   :root{
     --cream:#FBF6ED;
@@ -340,6 +341,17 @@
     text-align:center;
     margin-bottom: 22px;
   }
+  .sync-badge{
+    display:inline-block;
+    font-size: 11.5px;
+    font-weight:700;
+    color: var(--plum-soft);
+    background: var(--lavender);
+    border: 1px solid var(--lavender-line);
+    padding: 5px 14px;
+    border-radius: 999px;
+    margin-bottom: 10px;
+  }
   .sync-btn{
     font-family:'Quicksand', sans-serif;
     font-weight:700;
@@ -467,7 +479,7 @@
 </style>
 </head>
 <body>
-<script type="application/json" id="seedData">[{"id":"1786654509757-kps3xz","date":"2026-08-12","hours":4,"description":"Discussed project with Holly; read report of previous design session; attended community design meeting; notes write-up for meeting and Marcus Alert research; Lumeto exploration","loggedAt":"2026-08-13T20:55:09.757Z"},{"id":"1786654651521-4fh2fp","date":"2026-08-13","hours":3,"description":"Headset connection and account troubleshooting; Lumeto training slides, exploring existing GMU cases, creating a test case and testing it; Lumeto checklist auto recognition troubleshooting","loggedAt":"2026-08-13T20:57:31.521Z"}]</script>
+<script type="application/json" id="seedData">[]</script>
 
 <div class="wrap">
   <header class="top">
@@ -480,11 +492,11 @@
     <div class="circle-holder">
       <svg class="ring-svg" viewBox="0 0 200 200">
         <circle class="ring-track" cx="100" cy="100" r="92"></circle>
-        <circle class="ring-progress" id="ringProgress" cx="100" cy="100" r="92" style="stroke-dasharray: 578.053; stroke: var(--skyblue-deep); stroke-dashoffset: 533.093;"></circle>
+        <circle class="ring-progress" id="ringProgress" cx="100" cy="100" r="92"></circle>
       </svg>
       <div class="circle-fill" id="circleFill">
-        <div class="circle-number" id="circleNumber">83</div>
-        <div class="circle-caption hidden" id="circleCaption"></div>
+        <div class="circle-number" id="circleNumber">90</div>
+        <div class="circle-caption" id="circleCaption">hours left this month</div>
       </div>
     </div>
   </div>
@@ -492,11 +504,11 @@
   <div class="widgets">
     <div class="widget" id="weekWidget">
       <div class="w-label">This Week</div>
-      <div class="w-value" id="weekValue">7h</div>
+      <div class="w-value" id="weekValue">0h</div>
     </div>
     <div class="widget" id="avgWidget">
       <div class="w-label">Avg Weekly</div>
-      <div class="w-value" id="avgValue">3.5h</div>
+      <div class="w-value" id="avgValue">0h</div>
     </div>
     <div class="widget log-widget" id="logOpenBtn">
       <div class="w-plus">＋</div>
@@ -506,7 +518,7 @@
 
   <div class="calendar-section">
     <h2 id="calTitle">August 2026</h2>
-    <div class="cal-grid" id="calGrid"><div class="cal-dow">S</div><div class="cal-dow">M</div><div class="cal-dow">T</div><div class="cal-dow">W</div><div class="cal-dow">T</div><div class="cal-dow">F</div><div class="cal-dow">S</div><div class="cal-cell empty"></div><div class="cal-cell empty"></div><div class="cal-cell empty"></div><div class="cal-cell empty"></div><div class="cal-cell empty"></div><div class="cal-cell empty"></div><div class="cal-cell">1</div><div class="cal-cell">2</div><div class="cal-cell">3</div><div class="cal-cell">4</div><div class="cal-cell">5</div><div class="cal-cell">6</div><div class="cal-cell">7</div><div class="cal-cell">8</div><div class="cal-cell">9</div><div class="cal-cell">10</div><div class="cal-cell">11</div><div class="cal-cell logged" style="background: rgb(122, 205, 170);">12</div><div class="cal-cell today logged" style="background: rgb(144, 213, 184);">13</div><div class="cal-cell">14</div><div class="cal-cell">15</div><div class="cal-cell">16</div><div class="cal-cell">17</div><div class="cal-cell">18</div><div class="cal-cell">19</div><div class="cal-cell">20</div><div class="cal-cell">21</div><div class="cal-cell">22</div><div class="cal-cell">23</div><div class="cal-cell">24</div><div class="cal-cell">25</div><div class="cal-cell">26</div><div class="cal-cell">27</div><div class="cal-cell">28</div><div class="cal-cell">29</div><div class="cal-cell">30</div><div class="cal-cell">31</div></div>
+    <div class="cal-grid" id="calGrid"></div>
   </div>
 
   <div class="archive-link-wrap">
@@ -514,8 +526,9 @@
   </div>
 
   <div class="sync-wrap">
+    <div class="sync-badge" id="syncBadge">💾 Saved on this device only</div>
     <button type="button" class="sync-btn" id="exportBtn">⬇️ Save copy for another device</button>
-    <div class="sync-hint">Downloads this file with your current entries baked in — send that copy (and archive.html) to sync another device.</div>
+    <div class="sync-hint" id="syncHint">Downloads this file with your current entries baked in — send that copy (and archive.html) to sync another device.</div>
   </div>
 
   <footer class="note">Goal: 90 hours · resets automatically each month</footer>
@@ -534,15 +547,15 @@
     <form id="logForm">
       <div class="field">
         <label for="fDate">Date</label>
-        <input type="date" id="fDate" required="" max="2026-08-13">
+        <input type="date" id="fDate" required>
       </div>
       <div class="field">
         <label for="fHours">Hours Worked</label>
-        <input type="number" id="fHours" min="0" step="0.25" placeholder="e.g. 3.5" required="">
+        <input type="number" id="fHours" min="0" step="0.25" placeholder="e.g. 3.5" required>
       </div>
       <div class="field">
         <label for="fDesc">Task Description</label>
-        <textarea id="fDesc" placeholder="What did you work on?" required=""></textarea>
+        <textarea id="fDesc" placeholder="What did you work on?" required></textarea>
       </div>
       <div class="modal-actions">
         <button type="button" class="btn btn-cancel" id="cancelBtn">Cancel</button>
@@ -552,14 +565,45 @@
   </div>
 </div>
 
-<script>
+<script type="module">
+  // ============================================================
+  // CLOUD SYNC CONFIG — paste your Firebase project config below.
+  // Firebase Console → Project settings → General → Your apps → SDK setup.
+  // Leave apiKey empty to run in local-only mode (no sync between devices).
+  // ============================================================
+  const firebaseConfig = {
+    apiKey: "AIzaSyB6YfMs93UjoVAj6Jd0OsOP2FXLf9mAL7Y",
+	authDomain: "beepaboop600.firebaseapp.com",
+	projectId: "beepaboop600",
+	storageBucket: "beepaboop600.firebasestorage.app",
+	messagingSenderId: "341983136727",
+	appId: "1:341983136727:web:6364e709fe1737e3c75992"
+  };
+  // A "folder name" for your data in the shared database. Change this to
+  // any string only you know if you want a little extra obscurity.
+  const SYNC_KEY = "my-hours-tracker";
+  // ============================================================
+
   const STORAGE_KEY = 'hourTrackerEntries_v1';
   const DELETED_KEY = 'hourTrackerDeleted_v1';
   const GOAL = 90;
   const RING_R = 92;
   const RING_CIRC = 2 * Math.PI * RING_R;
 
-  function loadDeletedIds(){
+  let entries = [];
+  let cloudEnabled = false;
+  let saveEntries = (list) => { writeLocal(list); }; // reassigned below if cloud is enabled
+
+  function readLocal(){
+    try{
+      const raw = localStorage.getItem(STORAGE_KEY);
+      return raw ? JSON.parse(raw) : [];
+    }catch(e){ return []; }
+  }
+  function writeLocal(list){
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+  }
+  function readDeletedIds(){
     try{
       const raw = localStorage.getItem(DELETED_KEY);
       return raw ? JSON.parse(raw) : [];
@@ -573,40 +617,42 @@
       return Array.isArray(parsed) ? parsed : [];
     }catch(e){ return []; }
   }
-  // Merges any entries embedded in this file (from a "Save copy for another
-  // device" export) into localStorage, so opening an exported file on a new
-  // device picks up all the logged hours automatically.
-  function loadEntries(){
-    let ls = [];
-    try{
-      const raw = localStorage.getItem(STORAGE_KEY);
-      ls = raw ? JSON.parse(raw) : [];
-    }catch(e){ ls = []; }
-
+  // Local-only fallback: merges any entries embedded in this file (from a
+  // "Save copy for another device" export) into localStorage.
+  function mergedLocal(){
+    const ls = readLocal();
     const seed = readSeedEntries();
     if(seed.length){
-      const deleted = new Set(loadDeletedIds());
-      const knownIds = new Set(ls.map(e => String(e.id)));
+      const deleted = new Set(readDeletedIds());
+      const known = new Set(ls.map(e => String(e.id)));
       let changed = false;
       seed.forEach(e => {
-        if(!deleted.has(String(e.id)) && !knownIds.has(String(e.id))){
-          ls.push(e);
-          knownIds.add(String(e.id));
-          changed = true;
+        if(!deleted.has(String(e.id)) && !known.has(String(e.id))){
+          ls.push(e); known.add(String(e.id)); changed = true;
         }
       });
-      if(changed) saveEntries(ls);
+      if(changed) writeLocal(ls);
     }
     return ls;
   }
-  function saveEntries(list){
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+
+  function setSyncBadge(){
+    const badge = document.getElementById('syncBadge');
+    const hint = document.getElementById('syncHint');
+    if(!badge) return;
+    if(cloudEnabled){
+      badge.textContent = '☁️ Synced across devices';
+      hint.textContent = 'Changes save to the cloud automatically. This button is just for an offline backup copy.';
+    } else {
+      badge.textContent = '💾 Saved on this device only';
+      hint.textContent = 'Add a Firebase config in the code to sync across devices. Until then, use this to move entries to another device.';
+    }
   }
+
   // Downloads a fresh copy of this HTML file with the current entries baked
-  // into the embedded seed data block, so sending that file to another
-  // device brings all the logged hours with it.
+  // into the embedded seed data block — useful as a manual backup, or to
+  // move entries to another device if cloud sync isn't configured.
   function exportUpdatedFile(){
-    const entries = loadEntries();
     const seedEl = document.getElementById('seedData');
     if(seedEl) seedEl.textContent = JSON.stringify(entries);
 
@@ -668,7 +714,7 @@
   }
 
   function render(){
-    const all = loadEntries();
+    const all = entries;
     const monthEntries = entriesForCurrentMonth(all);
     const monthTotal = monthEntries.reduce((s,e) => s + Number(e.hours), 0);
 
@@ -825,13 +871,14 @@
     const description = document.getElementById('fDesc').value.trim();
     if(!date || isNaN(hours) || hours <= 0 || !description) return;
 
-    const all = loadEntries();
-    all.push({
+    const updated = entries.slice();
+    updated.push({
       id: Date.now() + '-' + Math.random().toString(36).slice(2,8),
       date, hours, description,
       loggedAt: new Date().toISOString()
     });
-    saveEntries(all);
+    entries = updated;
+    saveEntries(updated);
     closeModal();
     render();
 
@@ -880,8 +927,54 @@
 
   document.getElementById('exportBtn').addEventListener('click', exportUpdatedFile);
 
-  render();
+  // ---- Cloud sync init ----
+  async function initSync(){
+    const configured = !!(firebaseConfig.apiKey && firebaseConfig.projectId);
+    if(configured){
+      try{
+        const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js");
+        const { getFirestore, doc, onSnapshot, setDoc } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js");
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const docRef = doc(db, "hourTracker", SYNC_KEY);
+
+        cloudEnabled = true;
+        saveEntries = async (list) => {
+          writeLocal(list);
+          try{
+            await setDoc(docRef, { entries: list, updatedAt: Date.now() });
+          }catch(e){
+            console.error('Cloud save failed, changes are saved locally only for now.', e);
+          }
+        };
+
+        // Prime instantly from local cache, then listen for live updates.
+        entries = mergedLocal();
+        render();
+        setSyncBadge();
+
+        onSnapshot(docRef, snap => {
+          const data = snap.exists() ? snap.data() : null;
+          const cloudEntries = (data && Array.isArray(data.entries)) ? data.entries : [];
+          entries = cloudEntries;
+          writeLocal(cloudEntries);
+          render();
+        }, err => {
+          console.error('Firestore sync error, using local data.', err);
+        });
+        return;
+      }catch(e){
+        console.error('Firebase init failed, falling back to local storage only.', e);
+      }
+    }
+    // Local-only fallback (no config, or Firebase failed to load)
+    cloudEnabled = false;
+    entries = mergedLocal();
+    render();
+    setSyncBadge();
+  }
+
+  initSync();
 </script>
-
-
-</body></html>
+</body>
+</html>

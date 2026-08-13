@@ -1,10 +1,11 @@
 <!DOCTYPE html>
-<html lang="en"><head>
+<html lang="en">
+<head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Archive · Hours Tracker</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&amp;family=Quicksand:wght@500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet">
 <style>
   :root{
     --cream:#FBF6ED;
@@ -77,6 +78,17 @@
     margin-bottom: 26px;
   }
 
+  .sync-badge{
+    display:inline-block;
+    font-size: 11.5px;
+    font-weight:700;
+    color: var(--plum-soft);
+    background: var(--lavender);
+    border: 1px solid var(--lavender-line);
+    padding: 5px 14px;
+    border-radius: 999px;
+    margin-bottom: 10px;
+  }
   .sync-wrap{
     text-align:center;
     margin-bottom: 26px;
@@ -213,7 +225,7 @@
 </style>
 </head>
 <body>
-<script type="application/json" id="seedData">[{"id":"1786654509757-kps3xz","date":"2026-08-12","hours":4,"description":"Discussed project with Holly; read report of previous design session; attended community design meeting; notes write-up for meeting and Marcus Alert research; Lumeto exploration","loggedAt":"2026-08-13T20:55:09.757Z"},{"id":"1786654651521-4fh2fp","date":"2026-08-13","hours":3,"description":"Headset connection and account troubleshooting; Lumeto training slides, exploring existing GMU cases, creating a test case and testing it; Lumeto checklist auto recognition troubleshooting","loggedAt":"2026-08-13T20:57:31.521Z"}]</script>
+<script type="application/json" id="seedData">[]</script>
 
 <div class="wrap">
   <div class="top-row">
@@ -221,47 +233,51 @@
     <h1>Archive 🗂️</h1>
     <span class="spacer"></span>
   </div>
-  <div class="summary-bar" id="summaryBar">2 entries logged · 7 total hours</div>
+  <div class="summary-bar" id="summaryBar"></div>
 
   <div class="sync-wrap">
+    <div class="sync-badge" id="syncBadge">💾 Saved on this device only</div>
     <button type="button" class="sync-btn" id="exportBtn">⬇️ Save copy for another device</button>
-    <div class="sync-hint">Downloads this file with your current entries baked in — send that copy (and index.html) to sync another device.</div>
+    <div class="sync-hint" id="syncHint">Downloads this file with your current entries baked in — send that copy (and index.html) to sync another device.</div>
   </div>
 
-  <div id="archiveContent"><div class="month-block">
-        <h2>August 2026</h2>
-        <div class="month-total">7 hours logged across 2 entries</div>
-        <table>
-          <thead>
-            <tr><th>Date</th><th>Hours</th><th>Task Description</th><th></th></tr>
-          </thead>
-          <tbody>
-            
-              <tr data-id="1786654509757-kps3xz">
-                <td>Aug 12</td>
-                <td>4h</td>
-                <td>Discussed project with Holly; read report of previous design session; attended community design meeting; notes write-up for meeting and Marcus Alert research; Lumeto exploration</td>
-                <td class="actions-cell"><button class="delete-btn" type="button" data-id="1786654509757-kps3xz" aria-label="Delete entry" title="Delete entry">×</button></td>
-              </tr>
-            
-              <tr data-id="1786654651521-4fh2fp">
-                <td>Aug 13</td>
-                <td>3h</td>
-                <td>Headset connection and account troubleshooting; Lumeto training slides, exploring existing GMU cases, creating a test case and testing it; Lumeto checklist auto recognition troubleshooting</td>
-                <td class="actions-cell"><button class="delete-btn" type="button" data-id="1786654651521-4fh2fp" aria-label="Delete entry" title="Delete entry">×</button></td>
-              </tr>
-            
-          </tbody>
-        </table>
-      </div></div>
+  <div id="archiveContent"></div>
 </div>
 
-<script>
+<script type="module">
+  // ============================================================
+  // CLOUD SYNC CONFIG — paste your Firebase project config below.
+  // Must match the same config and SYNC_KEY used in index.html.
+  // ============================================================
+  const firebaseConfig = {
+    apiKey: "AIzaSyB6YfMs93UjoVAj6Jd0OsOP2FXLf9mAL7Y",
+	authDomain: "beepaboop600.firebaseapp.com",
+	projectId: "beepaboop600",
+	storageBucket: "beepaboop600.firebasestorage.app",
+	messagingSenderId: "341983136727",
+	appId: "1:341983136727:web:6364e709fe1737e3c75992"
+  };
+  const SYNC_KEY = "my-hours-tracker";
+  // ============================================================
+
   const STORAGE_KEY = 'hourTrackerEntries_v1';
   const DELETED_KEY = 'hourTrackerDeleted_v1';
   const monthNames = ["January","February","March","April","May","June","July","August","September","October","November","December"];
 
-  function loadDeletedIds(){
+  let entries = [];
+  let cloudEnabled = false;
+  let saveEntries = (list) => { writeLocal(list); };
+
+  function readLocal(){
+    try{
+      const raw = localStorage.getItem(STORAGE_KEY);
+      return raw ? JSON.parse(raw) : [];
+    }catch(e){ return []; }
+  }
+  function writeLocal(list){
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+  }
+  function readDeletedIds(){
     try{
       const raw = localStorage.getItem(DELETED_KEY);
       return raw ? JSON.parse(raw) : [];
@@ -278,37 +294,40 @@
       return Array.isArray(parsed) ? parsed : [];
     }catch(e){ return []; }
   }
-  // Merges any entries embedded in this file (from a "Save copy for another
-  // device" export) into localStorage, so opening an exported file on a new
-  // device picks up all the logged hours automatically.
-  function loadEntries(){
-    let ls = [];
-    try{
-      const raw = localStorage.getItem(STORAGE_KEY);
-      ls = raw ? JSON.parse(raw) : [];
-    }catch(e){ ls = []; }
-
+  function mergedLocal(){
+    const ls = readLocal();
     const seed = readSeedEntries();
     if(seed.length){
-      const deleted = new Set(loadDeletedIds());
-      const knownIds = new Set(ls.map(e => String(e.id)));
+      const deleted = new Set(readDeletedIds());
+      const known = new Set(ls.map(e => String(e.id)));
       let changed = false;
       seed.forEach(e => {
-        if(!deleted.has(String(e.id)) && !knownIds.has(String(e.id))){
-          ls.push(e);
-          knownIds.add(String(e.id));
-          changed = true;
+        if(!deleted.has(String(e.id)) && !known.has(String(e.id))){
+          ls.push(e); known.add(String(e.id)); changed = true;
         }
       });
-      if(changed) saveEntries(ls);
+      if(changed) writeLocal(ls);
     }
     return ls;
   }
+
+  function setSyncBadge(){
+    const badge = document.getElementById('syncBadge');
+    const hint = document.getElementById('syncHint');
+    if(!badge) return;
+    if(cloudEnabled){
+      badge.textContent = '☁️ Synced across devices';
+      hint.textContent = 'Changes save to the cloud automatically. This button is just for an offline backup copy.';
+    } else {
+      badge.textContent = '💾 Saved on this device only';
+      hint.textContent = 'Add a Firebase config in the code to sync across devices. Until then, use this to move entries to another device.';
+    }
+  }
+
   // Downloads a fresh copy of this HTML file with the current entries baked
-  // into the embedded seed data block, so sending that file to another
-  // device brings all the logged hours with it.
+  // into the embedded seed data block — useful as a manual backup, or to
+  // move entries to another device if cloud sync isn't configured.
   function exportUpdatedFile(){
-    const entries = loadEntries();
     const seedEl = document.getElementById('seedData');
     if(seedEl) seedEl.textContent = JSON.stringify(entries);
 
@@ -333,16 +352,10 @@
     return `${mon} ${d.getDate()}`;
   }
 
-  function saveEntries(list){
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
-  }
-
   const summaryBar = document.getElementById('summaryBar');
   const content = document.getElementById('archiveContent');
 
   function renderArchive(){
-    const entries = loadEntries();
-
     if(entries.length === 0){
       summaryBar.textContent = '';
       content.innerHTML = `
@@ -404,9 +417,10 @@
     if(!btn) return;
     const id = btn.getAttribute('data-id');
     if(!confirm('Delete this entry? This cannot be undone.')) return;
-    const remaining = loadEntries().filter(e => String(e.id) !== String(id));
+    const remaining = entries.filter(e => String(e.id) !== String(id));
+    entries = remaining;
     saveEntries(remaining);
-    const deleted = loadDeletedIds();
+    const deleted = readDeletedIds();
     if(!deleted.includes(String(id))){
       deleted.push(String(id));
       saveDeletedIds(deleted);
@@ -422,8 +436,52 @@
     return div.innerHTML;
   }
 
-  renderArchive();
+  // ---- Cloud sync init ----
+  async function initSync(){
+    const configured = !!(firebaseConfig.apiKey && firebaseConfig.projectId);
+    if(configured){
+      try{
+        const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js");
+        const { getFirestore, doc, onSnapshot, setDoc } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js");
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const docRef = doc(db, "hourTracker", SYNC_KEY);
+
+        cloudEnabled = true;
+        saveEntries = async (list) => {
+          writeLocal(list);
+          try{
+            await setDoc(docRef, { entries: list, updatedAt: Date.now() });
+          }catch(e){
+            console.error('Cloud save failed, changes are saved locally only for now.', e);
+          }
+        };
+
+        entries = mergedLocal();
+        renderArchive();
+        setSyncBadge();
+
+        onSnapshot(docRef, snap => {
+          const data = snap.exists() ? snap.data() : null;
+          const cloudEntries = (data && Array.isArray(data.entries)) ? data.entries : [];
+          entries = cloudEntries;
+          writeLocal(cloudEntries);
+          renderArchive();
+        }, err => {
+          console.error('Firestore sync error, using local data.', err);
+        });
+        return;
+      }catch(e){
+        console.error('Firebase init failed, falling back to local storage only.', e);
+      }
+    }
+    cloudEnabled = false;
+    entries = mergedLocal();
+    renderArchive();
+    setSyncBadge();
+  }
+
+  initSync();
 </script>
-
-
-</body></html>
+</body>
+</html>
