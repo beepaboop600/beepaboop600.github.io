@@ -1,0 +1,887 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hours Tracker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&amp;family=Quicksand:wght@500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+  :root{
+    --cream:#FBF6ED;
+    --panel:#FFFFFF;
+    --lavender:#F0EAFB;
+    --lavender-line:#E4DAF7;
+    --dandelion:#FFD166;
+    --dandelion-deep:#F5B93F;
+    --mint:#AEE6D3;
+    --mint-deep:#7FCDBB;
+    --skyblue:#AAD4F5;
+    --skyblue-deep:#5B9FD9;
+    --coral:#FF7A70;
+    --coral-bg:#FFE3E0;
+    --plum:#4A3F55;
+    --plum-soft:#8B7F99;
+    --pink:#FFD6E8;
+    --shadow: 0 10px 30px rgba(74,63,85,0.12);
+    --radius-lg: 28px;
+    --radius-md: 18px;
+  }
+
+  *{box-sizing:border-box;}
+
+  body{
+    margin:0;
+    min-height:100vh;
+    background:
+      radial-gradient(circle at 8% 12%, #FFF1DA 0%, transparent 40%),
+      radial-gradient(circle at 92% 8%, #E7F7F1 0%, transparent 38%),
+      radial-gradient(circle at 85% 90%, #F5E9FF 0%, transparent 42%),
+      var(--cream);
+    font-family:'Quicksand', sans-serif;
+    color:var(--plum);
+    padding: 18px 16px 60px;
+  }
+
+  .wrap{
+    max-width: 880px;
+    margin: 0 auto;
+  }
+
+  header.top{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:10px;
+    margin: 6px 0 28px;
+  }
+  header.top .blob-icon{
+    font-size: 30px;
+    transform: rotate(-8deg);
+  }
+  header.top h1{
+    font-family:'Baloo 2', sans-serif;
+    font-weight:700;
+    font-size: clamp(22px, 5vw, 30px);
+    margin:0;
+    letter-spacing: 0.5px;
+  }
+  .month-label{
+    text-align:center;
+    color: var(--plum-soft);
+    font-weight:600;
+    margin: -18px 0 26px;
+    font-size: 14px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  /* HERO CIRCLE */
+  .hero{
+    display:flex;
+    justify-content:center;
+    margin-bottom: 34px;
+  }
+  .circle-holder{
+    position:relative;
+    width: clamp(210px, 46vw, 270px);
+    height: clamp(210px, 46vw, 270px);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    animation: breathe 5s ease-in-out infinite;
+  }
+  @keyframes breathe{
+    0%,100%{ transform: scale(1); }
+    50%{ transform: scale(1.018); }
+  }
+  .ring-svg{
+    position:absolute;
+    inset:0;
+    width:100%;
+    height:100%;
+    transform: rotate(-90deg);
+  }
+  .ring-track{
+    fill:none;
+    stroke: rgba(74,63,85,0.08);
+    stroke-width: 8;
+  }
+  .ring-progress{
+    fill:none;
+    stroke-width: 8;
+    stroke-linecap: round;
+    transition: stroke-dashoffset 0.6s ease, stroke 0.6s ease;
+  }
+  .circle-fill{
+    width: 78%;
+    height: 78%;
+    border-radius: 50%;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    background: radial-gradient(circle at 32% 28%, #E4F3FD 0%, var(--skyblue) 55%, var(--skyblue-deep) 100%);
+    box-shadow: inset 0 -10px 18px rgba(0,0,0,0.07), 0 14px 26px rgba(91,159,217,0.35);
+    transition: background 0.7s ease, box-shadow 0.7s ease;
+    padding: 10px;
+    position: relative;
+    overflow: visible;
+  }
+  .circle-fill.over-goal{
+    background: radial-gradient(circle at 32% 28%, #FFE6A8 0%, var(--dandelion) 55%, var(--dandelion-deep) 100%);
+    box-shadow: inset 0 -10px 18px rgba(0,0,0,0.06), 0 14px 26px rgba(245,185,63,0.4);
+  }
+  .circle-number{
+    font-family:'Baloo 2', sans-serif;
+    font-weight: 800;
+    font-size: clamp(38px, 11vw, 54px);
+    line-height:1;
+  }
+  .circle-caption{
+    font-weight:600;
+    font-size: clamp(12px, 3vw, 14px);
+    margin-top: 6px;
+    max-width: 140px;
+    opacity: 0.85;
+  }
+  .circle-caption.hidden{
+    display:none;
+  }
+  .circle-pop{
+    animation: pop 0.45s ease;
+  }
+  @keyframes pop{
+    0%{ transform: scale(1); }
+    35%{ transform: scale(1.09); }
+    100%{ transform: scale(1); }
+  }
+
+  .confetti-layer{
+    position:fixed;
+    inset:0;
+    pointer-events:none;
+    overflow:hidden;
+    z-index:9999;
+  }
+  .confetti-piece{
+    position:fixed;
+    top:0;
+    left:0;
+    width:11px;
+    height:20px;
+    margin:-10px 0 0 -5px;
+    opacity:1;
+    animation: confetti-burst 1300ms cubic-bezier(0.15,0.8,0.3,1) forwards;
+  }
+  @keyframes confetti-burst{
+    0%{ transform: translate(0,0) rotate(0deg) scale(1); opacity:1; }
+    75%{ opacity:1; }
+    100%{ transform: translate(var(--tx), var(--ty)) rotate(var(--rot)) scale(0.55); opacity:0; }
+  }
+
+  /* WIDGETS */
+  .widgets{
+    display:grid;
+    grid-template-columns: 1fr;
+    gap: 14px;
+    margin-bottom: 34px;
+  }
+  @media (min-width: 680px){
+    .widgets{ grid-template-columns: repeat(3, 1fr); }
+  }
+  .widget{
+    background: var(--panel);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow);
+    padding: 18px 16px;
+    text-align:center;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    gap:6px;
+    min-height: 108px;
+  }
+  .widget .w-label{
+    font-size: 12.5px;
+    font-weight:700;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--plum-soft);
+  }
+  .widget .w-value{
+    font-family:'Baloo 2', sans-serif;
+    font-weight:700;
+    font-size: 30px;
+    color: var(--plum);
+    transition: color 0.3s ease;
+  }
+  .widget.alert .w-value{
+    color: var(--coral);
+  }
+  .widget.alert{
+    background: var(--coral-bg);
+  }
+  .widget.log-widget{
+    background: linear-gradient(160deg, var(--pink), #FCE8F2);
+    cursor:pointer;
+    border: none;
+    align-items:center;
+  }
+  .widget.log-widget .w-plus{
+    font-family:'Baloo 2', sans-serif;
+    font-size: 30px;
+    line-height:1;
+  }
+  .widget.log-widget .w-label{ color: #A85C82; }
+  .widget.log-widget:hover{ transform: translateY(-2px); box-shadow: 0 14px 26px rgba(168,92,130,0.25); }
+  .widget.log-widget{ transition: transform 0.2s ease, box-shadow 0.2s ease; }
+
+  /* CALENDAR */
+  .calendar-section{
+    background: var(--panel);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow);
+    padding: 22px 18px 26px;
+    margin-bottom: 26px;
+  }
+  .calendar-section h2{
+    font-family:'Baloo 2', sans-serif;
+    font-size: 19px;
+    margin: 0 0 16px;
+    text-align:center;
+  }
+  .cal-grid{
+    display:grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 6px;
+  }
+  .cal-dow{
+    text-align:center;
+    font-size: 11px;
+    font-weight:700;
+    color: var(--plum-soft);
+    text-transform: uppercase;
+    padding-bottom: 4px;
+  }
+  .cal-cell{
+    position:relative;
+    aspect-ratio: 1/1;
+    border-radius: 10px;
+    background: var(--lavender);
+    display:flex;
+    align-items:flex-start;
+    justify-content:flex-start;
+    padding: 4px 6px;
+    font-size: clamp(10px, 2.6vw, 12px);
+    font-weight:600;
+    color: var(--plum-soft);
+  }
+  .cal-cell.empty{
+    background: transparent;
+  }
+  .cal-cell.logged{
+    color: #1f4a3d;
+    cursor: pointer;
+    font-weight:700;
+  }
+  .cal-cell.today{
+    outline: 2px solid var(--dandelion-deep);
+    outline-offset: -2px;
+  }
+  .tooltip{
+    position: fixed;
+    z-index: 999;
+    background: var(--plum);
+    color: #fff;
+    padding: 10px 13px;
+    border-radius: 12px;
+    font-size: 13px;
+    font-weight:600;
+    max-width: 220px;
+    box-shadow: 0 10px 22px rgba(0,0,0,0.25);
+    pointer-events:none;
+    opacity:0;
+    transform: translateY(4px);
+    transition: opacity 0.15s ease, transform 0.15s ease;
+  }
+  .tooltip.show{ opacity:1; transform: translateY(0); }
+  .tooltip .tt-hours{ color: var(--dandelion); margin-bottom:3px; }
+  .tooltip .tt-desc{ font-weight:500; color:#EDE7F5; }
+
+  /* ARCHIVE BUTTON */
+  .archive-link-wrap{
+    display:flex;
+    justify-content:center;
+    margin-bottom: 10px;
+  }
+  .archive-btn{
+    font-family:'Quicksand', sans-serif;
+    font-weight:700;
+    font-size: 15px;
+    color: var(--plum);
+    background: var(--lavender);
+    border: 2px solid var(--lavender-line);
+    padding: 13px 30px;
+    border-radius: 999px;
+    text-decoration:none;
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    transition: transform 0.2s ease, background 0.2s ease;
+  }
+  .archive-btn:hover{
+    background: #E5DBFB;
+    transform: translateY(-2px);
+  }
+
+  /* SYNC / EXPORT */
+  .sync-wrap{
+    text-align:center;
+    margin-bottom: 22px;
+  }
+  .sync-btn{
+    font-family:'Quicksand', sans-serif;
+    font-weight:700;
+    font-size: 13.5px;
+    color: #1f4a3d;
+    background: var(--mint);
+    border: 2px solid var(--mint-deep);
+    padding: 10px 20px;
+    border-radius: 999px;
+    cursor:pointer;
+    transition: transform 0.2s ease, background 0.2s ease;
+  }
+  .sync-btn:hover{
+    background: var(--mint-deep);
+    transform: translateY(-2px);
+  }
+  .sync-hint{
+    max-width: 360px;
+    margin: 8px auto 0;
+    font-size: 11.5px;
+    color: var(--plum-soft);
+    font-weight:600;
+    line-height:1.4;
+  }
+
+  /* MODAL */
+  .modal-overlay{
+    position:fixed;
+    inset:0;
+    background: rgba(74,63,85,0.35);
+    backdrop-filter: blur(2px);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding: 20px;
+    z-index: 1000;
+    opacity:0;
+    pointer-events:none;
+    transition: opacity 0.2s ease;
+  }
+  .modal-overlay.open{
+    opacity:1;
+    pointer-events:auto;
+  }
+  .modal{
+    background: var(--panel);
+    border-radius: var(--radius-lg);
+    padding: 26px 24px 22px;
+    width: 100%;
+    max-width: 360px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.25);
+    transform: scale(0.94) translateY(10px);
+    transition: transform 0.25s ease;
+  }
+  .modal-overlay.open .modal{
+    transform: scale(1) translateY(0);
+  }
+  .modal h3{
+    font-family:'Baloo 2', sans-serif;
+    margin: 0 0 18px;
+    font-size: 21px;
+    text-align:center;
+  }
+  .field{
+    margin-bottom: 14px;
+    display:flex;
+    flex-direction:column;
+    gap:5px;
+  }
+  .field label{
+    font-size: 12.5px;
+    font-weight:700;
+    color: var(--plum-soft);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .field input, .field textarea{
+    font-family:'Quicksand', sans-serif;
+    font-size: 15px;
+    font-weight:600;
+    color: var(--plum);
+    border: 2px solid var(--lavender-line);
+    background: var(--lavender);
+    border-radius: 12px;
+    padding: 10px 12px;
+    outline:none;
+    transition: border-color 0.2s ease;
+  }
+  .field input:focus, .field textarea:focus{
+    border-color: var(--dandelion-deep);
+  }
+  .field textarea{ resize: vertical; min-height: 60px; font-family:'Quicksand', sans-serif; }
+  .modal-actions{
+    display:flex;
+    gap:10px;
+    margin-top: 18px;
+  }
+  .btn{
+    flex:1;
+    font-family:'Quicksand', sans-serif;
+    font-weight:700;
+    font-size: 14.5px;
+    padding: 12px 14px;
+    border-radius: 999px;
+    border:none;
+    cursor:pointer;
+    transition: transform 0.15s ease, opacity 0.15s ease;
+  }
+  .btn:hover{ transform: translateY(-1px); }
+  .btn-cancel{
+    background: var(--lavender);
+    color: var(--plum);
+  }
+  .btn-save{
+    background: linear-gradient(135deg, var(--dandelion), var(--dandelion-deep));
+    color: #4A3510;
+  }
+
+  footer.note{
+    text-align:center;
+    font-size: 12px;
+    color: var(--plum-soft);
+    margin-top: 18px;
+  }
+</style>
+</head>
+<body>
+<script type="application/json" id="seedData">[{"id":"1786654509757-kps3xz","date":"2026-08-12","hours":4,"description":"Discussed project with Holly; read report of previous design session; attended community design meeting; notes write-up for meeting and Marcus Alert research; Lumeto exploration","loggedAt":"2026-08-13T20:55:09.757Z"},{"id":"1786654651521-4fh2fp","date":"2026-08-13","hours":3,"description":"Headset connection and account troubleshooting; Lumeto training slides, exploring existing GMU cases, creating a test case and testing it; Lumeto checklist auto recognition troubleshooting","loggedAt":"2026-08-13T20:57:31.521Z"}]</script>
+
+<div class="wrap">
+  <header class="top">
+    <span class="blob-icon">🌼</span>
+    <h1>Hours Tracker</h1>
+  </header>
+  <div class="month-label" id="monthLabel">August 2026</div>
+
+  <div class="hero">
+    <div class="circle-holder">
+      <svg class="ring-svg" viewBox="0 0 200 200">
+        <circle class="ring-track" cx="100" cy="100" r="92"></circle>
+        <circle class="ring-progress" id="ringProgress" cx="100" cy="100" r="92" style="stroke-dasharray: 578.053; stroke: var(--skyblue-deep); stroke-dashoffset: 533.093;"></circle>
+      </svg>
+      <div class="circle-fill" id="circleFill">
+        <div class="circle-number" id="circleNumber">83</div>
+        <div class="circle-caption hidden" id="circleCaption"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="widgets">
+    <div class="widget" id="weekWidget">
+      <div class="w-label">This Week</div>
+      <div class="w-value" id="weekValue">7h</div>
+    </div>
+    <div class="widget" id="avgWidget">
+      <div class="w-label">Avg Weekly</div>
+      <div class="w-value" id="avgValue">3.5h</div>
+    </div>
+    <div class="widget log-widget" id="logOpenBtn">
+      <div class="w-plus">＋</div>
+      <div class="w-label">Log Hours</div>
+    </div>
+  </div>
+
+  <div class="calendar-section">
+    <h2 id="calTitle">August 2026</h2>
+    <div class="cal-grid" id="calGrid"><div class="cal-dow">S</div><div class="cal-dow">M</div><div class="cal-dow">T</div><div class="cal-dow">W</div><div class="cal-dow">T</div><div class="cal-dow">F</div><div class="cal-dow">S</div><div class="cal-cell empty"></div><div class="cal-cell empty"></div><div class="cal-cell empty"></div><div class="cal-cell empty"></div><div class="cal-cell empty"></div><div class="cal-cell empty"></div><div class="cal-cell">1</div><div class="cal-cell">2</div><div class="cal-cell">3</div><div class="cal-cell">4</div><div class="cal-cell">5</div><div class="cal-cell">6</div><div class="cal-cell">7</div><div class="cal-cell">8</div><div class="cal-cell">9</div><div class="cal-cell">10</div><div class="cal-cell">11</div><div class="cal-cell logged" style="background: rgb(122, 205, 170);">12</div><div class="cal-cell today logged" style="background: rgb(144, 213, 184);">13</div><div class="cal-cell">14</div><div class="cal-cell">15</div><div class="cal-cell">16</div><div class="cal-cell">17</div><div class="cal-cell">18</div><div class="cal-cell">19</div><div class="cal-cell">20</div><div class="cal-cell">21</div><div class="cal-cell">22</div><div class="cal-cell">23</div><div class="cal-cell">24</div><div class="cal-cell">25</div><div class="cal-cell">26</div><div class="cal-cell">27</div><div class="cal-cell">28</div><div class="cal-cell">29</div><div class="cal-cell">30</div><div class="cal-cell">31</div></div>
+  </div>
+
+  <div class="archive-link-wrap">
+    <a href="archive.html" class="archive-btn">🗂️ Open Archive</a>
+  </div>
+
+  <div class="sync-wrap">
+    <button type="button" class="sync-btn" id="exportBtn">⬇️ Save copy for another device</button>
+    <div class="sync-hint">Downloads this file with your current entries baked in — send that copy (and archive.html) to sync another device.</div>
+  </div>
+
+  <footer class="note">Goal: 90 hours · resets automatically each month</footer>
+</div>
+
+<div class="tooltip" id="tooltip">
+  <div class="tt-hours" id="ttHours"></div>
+  <div class="tt-desc" id="ttDesc"></div>
+</div>
+
+<div class="confetti-layer" id="confettiLayer"></div>
+
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <h3>Log Hours 📝</h3>
+    <form id="logForm">
+      <div class="field">
+        <label for="fDate">Date</label>
+        <input type="date" id="fDate" required="" max="2026-08-13">
+      </div>
+      <div class="field">
+        <label for="fHours">Hours Worked</label>
+        <input type="number" id="fHours" min="0" step="0.25" placeholder="e.g. 3.5" required="">
+      </div>
+      <div class="field">
+        <label for="fDesc">Task Description</label>
+        <textarea id="fDesc" placeholder="What did you work on?" required=""></textarea>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-cancel" id="cancelBtn">Cancel</button>
+        <button type="submit" class="btn btn-save">Save</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  const STORAGE_KEY = 'hourTrackerEntries_v1';
+  const DELETED_KEY = 'hourTrackerDeleted_v1';
+  const GOAL = 90;
+  const RING_R = 92;
+  const RING_CIRC = 2 * Math.PI * RING_R;
+
+  function loadDeletedIds(){
+    try{
+      const raw = localStorage.getItem(DELETED_KEY);
+      return raw ? JSON.parse(raw) : [];
+    }catch(e){ return []; }
+  }
+  function readSeedEntries(){
+    try{
+      const el = document.getElementById('seedData');
+      if(!el) return [];
+      const parsed = JSON.parse(el.textContent || '[]');
+      return Array.isArray(parsed) ? parsed : [];
+    }catch(e){ return []; }
+  }
+  // Merges any entries embedded in this file (from a "Save copy for another
+  // device" export) into localStorage, so opening an exported file on a new
+  // device picks up all the logged hours automatically.
+  function loadEntries(){
+    let ls = [];
+    try{
+      const raw = localStorage.getItem(STORAGE_KEY);
+      ls = raw ? JSON.parse(raw) : [];
+    }catch(e){ ls = []; }
+
+    const seed = readSeedEntries();
+    if(seed.length){
+      const deleted = new Set(loadDeletedIds());
+      const knownIds = new Set(ls.map(e => String(e.id)));
+      let changed = false;
+      seed.forEach(e => {
+        if(!deleted.has(String(e.id)) && !knownIds.has(String(e.id))){
+          ls.push(e);
+          knownIds.add(String(e.id));
+          changed = true;
+        }
+      });
+      if(changed) saveEntries(ls);
+    }
+    return ls;
+  }
+  function saveEntries(list){
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+  }
+  // Downloads a fresh copy of this HTML file with the current entries baked
+  // into the embedded seed data block, so sending that file to another
+  // device brings all the logged hours with it.
+  function exportUpdatedFile(){
+    const entries = loadEntries();
+    const seedEl = document.getElementById('seedData');
+    if(seedEl) seedEl.textContent = JSON.stringify(entries);
+
+    if(typeof closeModal === 'function') closeModal();
+    if(typeof hideTooltip === 'function') hideTooltip();
+
+    const html = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+    const blob = new Blob([html], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'index.html';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  }
+  function fmtNum(n){
+    n = Math.round(n * 100) / 100;
+    return (n % 1 === 0) ? String(n) : String(n.toFixed(2)).replace(/0+$/,'').replace(/\.$/,'');
+  }
+  function dateKey(d){
+    const y = d.getFullYear();
+    const m = String(d.getMonth()+1).padStart(2,'0');
+    const day = String(d.getDate()).padStart(2,'0');
+    return `${y}-${m}-${day}`;
+  }
+
+  const now = new Date();
+  const curYear = now.getFullYear();
+  const curMonth = now.getMonth(); // 0-indexed
+  const monthNames = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+
+  document.getElementById('monthLabel').textContent = `${monthNames[curMonth]} ${curYear}`;
+  document.getElementById('calTitle').textContent = `${monthNames[curMonth]} ${curYear}`;
+  document.getElementById('fDate').value = dateKey(now);
+  document.getElementById('fDate').max = dateKey(now);
+
+  function entriesForCurrentMonth(all){
+    return all.filter(e => {
+      const d = new Date(e.date + 'T00:00:00');
+      return d.getFullYear() === curYear && d.getMonth() === curMonth;
+    });
+  }
+
+  function startOfWeek(d){
+    const copy = new Date(d);
+    copy.setHours(0,0,0,0);
+    const day = copy.getDay(); // 0 = Sunday
+    copy.setDate(copy.getDate() - day);
+    return copy;
+  }
+  function endOfWeek(d){
+    const s = startOfWeek(d);
+    const e = new Date(s);
+    e.setDate(e.getDate() + 6);
+    e.setHours(23,59,59,999);
+    return e;
+  }
+
+  function render(){
+    const all = loadEntries();
+    const monthEntries = entriesForCurrentMonth(all);
+    const monthTotal = monthEntries.reduce((s,e) => s + Number(e.hours), 0);
+
+    // ---- Circle ----
+    const circleFill = document.getElementById('circleFill');
+    const circleNumber = document.getElementById('circleNumber');
+    const circleCaption = document.getElementById('circleCaption');
+    const ring = document.getElementById('ringProgress');
+    ring.style.strokeDasharray = `${RING_CIRC}`;
+
+    const isOver = monthTotal >= GOAL;
+    if(isOver){
+      circleFill.classList.add('over-goal');
+      const overage = monthTotal - GOAL;
+      circleNumber.textContent = fmtNum(overage);
+      circleCaption.textContent = 'Good job!';
+      circleCaption.classList.remove('hidden');
+      ring.style.stroke = 'var(--dandelion-deep)';
+      ring.style.strokeDashoffset = 0;
+    } else {
+      circleFill.classList.remove('over-goal');
+      const remaining = GOAL - monthTotal;
+      circleNumber.textContent = fmtNum(remaining);
+      circleCaption.textContent = '';
+      circleCaption.classList.add('hidden');
+      ring.style.stroke = 'var(--skyblue-deep)';
+      const frac = Math.min(1, monthTotal / GOAL);
+      ring.style.strokeDashoffset = RING_CIRC * (1 - frac);
+    }
+
+    // ---- Weekly widgets ----
+    const weekStart = startOfWeek(now);
+    const weekEnd = endOfWeek(now);
+    const weekTotal = all.reduce((s,e) => {
+      const d = new Date(e.date + 'T00:00:00');
+      return (d >= weekStart && d <= weekEnd) ? s + Number(e.hours) : s;
+    }, 0);
+    const weekValue = document.getElementById('weekValue');
+    const weekWidget = document.getElementById('weekWidget');
+    weekValue.textContent = `${fmtNum(weekTotal)}h`;
+    weekWidget.classList.toggle('alert', weekTotal > 29);
+
+    const dayOfMonth = now.getDate();
+    const weeksElapsed = Math.max(1, Math.ceil(dayOfMonth / 7));
+    const avgWeekly = monthTotal / weeksElapsed;
+    const avgValue = document.getElementById('avgValue');
+    const avgWidget = document.getElementById('avgWidget');
+    avgValue.textContent = `${fmtNum(avgWeekly)}h`;
+    avgWidget.classList.toggle('alert', avgWeekly > 29);
+
+    // ---- Calendar ----
+    buildCalendar(monthEntries);
+  }
+
+  function buildCalendar(monthEntries){
+    const grid = document.getElementById('calGrid');
+    grid.innerHTML = '';
+
+    const dows = ['S','M','T','W','T','F','S'];
+    dows.forEach(d => {
+      const el = document.createElement('div');
+      el.className = 'cal-dow';
+      el.textContent = d;
+      grid.appendChild(el);
+    });
+
+    // aggregate entries by day-of-month
+    const byDay = {};
+    monthEntries.forEach(e => {
+      const d = new Date(e.date + 'T00:00:00');
+      const day = d.getDate();
+      if(!byDay[day]) byDay[day] = { hours: 0, descs: [] };
+      byDay[day].hours += Number(e.hours);
+      byDay[day].descs.push(e.description);
+    });
+
+    const firstDay = new Date(curYear, curMonth, 1).getDay();
+    const daysInMonth = new Date(curYear, curMonth + 1, 0).getDate();
+    const todayDate = now.getDate();
+    const isCurrentRealMonth = (curYear === new Date().getFullYear() && curMonth === new Date().getMonth());
+
+    const maxHours = Math.max(1, ...Object.values(byDay).map(v => v.hours));
+
+    for(let i=0; i<firstDay; i++){
+      const el = document.createElement('div');
+      el.className = 'cal-cell empty';
+      grid.appendChild(el);
+    }
+
+    for(let day=1; day<=daysInMonth; day++){
+      const cell = document.createElement('div');
+      cell.className = 'cal-cell';
+      cell.textContent = day;
+      if(isCurrentRealMonth && day === todayDate) cell.classList.add('today');
+
+      const info = byDay[day];
+      if(info){
+        cell.classList.add('logged');
+        const intensity = Math.min(1, info.hours / Math.max(maxHours, 8));
+        const lightness = 88 - Math.round(intensity * 48); // 88% (light) down to ~40%
+        cell.style.background = `hsl(155, 45%, ${lightness}%)`;
+        if(lightness < 55) cell.style.color = '#EAF7F1';
+
+        cell.addEventListener('mouseenter', (ev) => showTooltip(ev, info));
+        cell.addEventListener('mousemove', positionTooltip);
+        cell.addEventListener('mouseleave', hideTooltip);
+        cell.addEventListener('click', (ev) => {
+          ev.stopPropagation();
+          showTooltip(ev, info);
+          setTimeout(() => document.addEventListener('click', hideTooltip, { once:true }), 0);
+        });
+      }
+      grid.appendChild(cell);
+    }
+  }
+
+  const tooltip = document.getElementById('tooltip');
+  function showTooltip(ev, info){
+    document.getElementById('ttHours').textContent = `${fmtNum(info.hours)} hours logged`;
+    document.getElementById('ttDesc').textContent = info.descs.join(' · ');
+    tooltip.classList.add('show');
+    positionTooltip(ev);
+  }
+  function positionTooltip(ev){
+    const x = ev.clientX;
+    const y = ev.clientY;
+    const ttW = 220;
+    let left = x + 14;
+    if(left + ttW > window.innerWidth - 10) left = x - ttW - 14;
+    tooltip.style.left = left + 'px';
+    tooltip.style.top = (y + 14) + 'px';
+  }
+  function hideTooltip(){
+    tooltip.classList.remove('show');
+  }
+
+  // ---- Modal ----
+  const overlay = document.getElementById('modalOverlay');
+  document.getElementById('logOpenBtn').addEventListener('click', () => {
+    overlay.classList.add('open');
+  });
+  document.getElementById('cancelBtn').addEventListener('click', closeModal);
+  overlay.addEventListener('click', (e) => { if(e.target === overlay) closeModal(); });
+  function closeModal(){
+    overlay.classList.remove('open');
+    document.getElementById('logForm').reset();
+    document.getElementById('fDate').value = dateKey(new Date());
+  }
+
+  document.getElementById('logForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const date = document.getElementById('fDate').value;
+    const hours = parseFloat(document.getElementById('fHours').value);
+    const description = document.getElementById('fDesc').value.trim();
+    if(!date || isNaN(hours) || hours <= 0 || !description) return;
+
+    const all = loadEntries();
+    all.push({
+      id: Date.now() + '-' + Math.random().toString(36).slice(2,8),
+      date, hours, description,
+      loggedAt: new Date().toISOString()
+    });
+    saveEntries(all);
+    closeModal();
+    render();
+
+    const circleFill = document.getElementById('circleFill');
+    circleFill.classList.add('circle-pop');
+    setTimeout(() => circleFill.classList.remove('circle-pop'), 460);
+  });
+
+  // ---- Confetti ----
+  const confettiColors = ['#FFD166','#FF8577','#AEE6D3','#AAD4F5','#FFD6E8','#C9B6F2'];
+  function spawnConfetti(){
+    const layer = document.getElementById('confettiLayer');
+    const circleFillEl = document.getElementById('circleFill');
+    if(!layer || !circleFillEl) return;
+    const rect = circleFillEl.getBoundingClientRect();
+    const originX = rect.left + rect.width / 2;
+    const originY = rect.top + rect.height / 2;
+    const spreadX = window.innerWidth * 0.46;
+    const spreadY = window.innerHeight * 0.42;
+
+    for(let i=0; i<90; i++){
+      const piece = document.createElement('span');
+      piece.className = 'confetti-piece';
+      const angle = Math.random() * Math.PI * 2;
+      const reach = 0.45 + Math.random() * 0.65; // vary how far each piece travels
+      const tx = Math.cos(angle) * spreadX * reach;
+      const ty = Math.sin(angle) * spreadY * reach - spreadY * 0.15;
+      const rot = Math.round(Math.random() * 900 - 450);
+      piece.style.left = originX + 'px';
+      piece.style.top = originY + 'px';
+      piece.style.setProperty('--tx', tx + 'px');
+      piece.style.setProperty('--ty', ty + 'px');
+      piece.style.setProperty('--rot', rot + 'deg');
+      piece.style.background = confettiColors[Math.floor(Math.random() * confettiColors.length)];
+      piece.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+      piece.style.animationDelay = Math.round(Math.random() * 140) + 'ms';
+      layer.appendChild(piece);
+      setTimeout(() => piece.remove(), 1550);
+    }
+  }
+  document.getElementById('circleFill').addEventListener('mouseenter', () => {
+    if(document.getElementById('circleFill').classList.contains('over-goal')){
+      spawnConfetti();
+    }
+  });
+
+  document.getElementById('exportBtn').addEventListener('click', exportUpdatedFile);
+
+  render();
+</script>
+
+
+</body></html>
