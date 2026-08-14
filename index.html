@@ -80,6 +80,9 @@
   .hero{
     display:flex;
     justify-content:center;
+    align-items:center;
+    flex-wrap: wrap;
+    gap: 48px;
     margin-bottom: 34px;
   }
   .circle-holder{
@@ -113,6 +116,35 @@
     stroke-linecap: round;
     transition: stroke-dashoffset 0.6s ease, stroke 0.6s ease;
   }
+  .budget-ring-svg{
+    position:absolute;
+    inset:0;
+    width:100%;
+    height:100%;
+    transform: rotate(-90deg);
+    overflow: visible;
+  }
+  .budget-ring-track{
+    fill:none;
+    stroke: rgba(74,63,85,0.07);
+    stroke-width: 5;
+  }
+  .ring-segment{
+    fill:none;
+    stroke-width: 5;
+    transition: stroke-dasharray 0.6s ease, stroke-dashoffset 0.6s ease;
+  }
+  .circle-fill.overage-fill{
+    background: radial-gradient(circle at 32% 28%, #FFD9D4 0%, var(--coral) 55%, #E1483A 100%);
+    box-shadow: inset 0 -10px 18px rgba(0,0,0,0.06), 0 14px 26px rgba(255,122,112,0.4);
+  }
+  .circle-fill.overage-fill.overage-safe{
+    background: radial-gradient(circle at 32% 28%, #DFF3E7 0%, #6FBE8E 55%, #3E9265 100%);
+    box-shadow: inset 0 -10px 18px rgba(0,0,0,0.06), 0 14px 26px rgba(111,190,142,0.4);
+  }
+  .overage-holder{
+    display:none;
+  }
   .circle-fill{
     width: 78%;
     height: 78%;
@@ -128,6 +160,7 @@
     padding: 10px;
     position: relative;
     overflow: visible;
+    cursor: pointer;
   }
   .circle-fill.over-goal{
     background: radial-gradient(circle at 32% 28%, #FFE6A8 0%, var(--dandelion) 55%, var(--dandelion-deep) 100%);
@@ -231,7 +264,7 @@
   }
   .widget.log-widget .w-plus{
     font-family:'Baloo 2', sans-serif;
-    font-size: 30px;
+    font-size: 36px;
     line-height:1;
   }
   .widget.log-widget .w-label{ color: #A85C82; }
@@ -245,6 +278,20 @@
     box-shadow: var(--shadow);
     padding: 22px 18px 26px;
     margin-bottom: 26px;
+    transition: background-color 0.4s ease;
+  }
+  .calendar-section.confetti-bg{
+    background-color: var(--panel);
+    background-image:
+      radial-gradient(circle, #FFD166 3px, transparent 3.5px),
+      radial-gradient(circle, #FF8577 3px, transparent 3.5px),
+      radial-gradient(circle, #AEE6D3 3px, transparent 3.5px),
+      radial-gradient(circle, #AAD4F5 3px, transparent 3.5px),
+      radial-gradient(circle, #FFD6E8 3px, transparent 3.5px),
+      radial-gradient(circle, #C9B6F2 3px, transparent 3.5px);
+    background-repeat: repeat;
+    background-size: 46px 46px;
+    background-position: 0 0, 12px 20px, 24px 6px, 36px 30px, 6px 34px, 30px 12px;
   }
   .calendar-section h2{
     font-family:'Baloo 2', sans-serif;
@@ -492,7 +539,7 @@
     text-transform: uppercase;
     letter-spacing: 0.5px;
   }
-  .field input, .field textarea{
+  .field input, .field textarea, .field select{
     font-family:'Quicksand', sans-serif;
     font-size: 15px;
     font-weight:600;
@@ -504,7 +551,7 @@
     outline:none;
     transition: border-color 0.2s ease;
   }
-  .field input:focus, .field textarea:focus{
+  .field input:focus, .field textarea:focus, .field select:focus{
     border-color: var(--dandelion-deep);
   }
   .field textarea{ resize: vertical; min-height: 60px; font-family:'Quicksand', sans-serif; }
@@ -563,8 +610,11 @@
   </header>
   <div class="month-label" id="monthLabel">August 2026</div>
 
-  <div class="hero">
-    <div class="circle-holder">
+  <div class="hero" id="heroSection">
+    <div class="circle-holder" id="circleHolder">
+      <svg class="budget-ring-svg" id="budgetRingSvg" viewBox="0 0 200 200">
+        <circle class="budget-ring-track" cx="100" cy="100" r="97"></circle>
+      </svg>
       <svg class="ring-svg" viewBox="0 0 200 200">
         <circle class="ring-track" cx="100" cy="100" r="92"></circle>
         <circle class="ring-progress" id="ringProgress" cx="100" cy="100" r="92"></circle>
@@ -572,6 +622,15 @@
       <div class="circle-fill" id="circleFill">
         <div class="circle-number" id="circleNumber">90</div>
         <div class="circle-caption" id="circleCaption">hours left this month</div>
+      </div>
+    </div>
+
+    <div class="circle-holder overage-holder" id="overageHolder">
+      <svg class="budget-ring-svg" id="overageRingSvg" viewBox="0 0 200 200">
+        <circle class="budget-ring-track" cx="100" cy="100" r="97"></circle>
+      </svg>
+      <div class="circle-fill overage-fill" id="overageFill">
+        <div class="circle-number" id="overageNumber">0</div>
       </div>
     </div>
   </div>
@@ -585,9 +644,8 @@
       <div class="w-label">Avg Weekly (Year)</div>
       <div class="w-value" id="avgValue">0h</div>
     </div>
-    <div class="widget log-widget" id="logOpenBtn">
+    <div class="widget log-widget" id="logOpenBtn" aria-label="Log money" title="Log money">
       <div class="w-plus">＋</div>
-      <div class="w-label">Log Hours</div>
     </div>
   </div>
 
@@ -639,6 +697,34 @@
   </div>
 </div>
 
+<div class="modal-overlay" id="budgetModalOverlay">
+  <div class="modal">
+    <h3>Log Money</h3>
+    <form id="budgetForm">
+      <div class="field">
+        <label for="bAmount">Amount</label>
+        <input type="number" id="bAmount" step="0.01" placeholder="e.g. 45.50 or -20" required>
+      </div>
+      <div class="field">
+        <label for="bCategory">Category</label>
+        <select id="bCategory" required>
+          <option value="savings" style="color:#8B6FC9;">Savings</option>
+          <option value="loans" style="color:#3F76B8;">Loans</option>
+          <option value="groceries" style="color:#3E9265;">Groceries</option>
+          <option value="gas" style="color:#B8860B;">Gas</option>
+          <option value="food" style="color:#D9772E;">Food</option>
+          <option value="subscription" style="color:#000000;">Subscription</option>
+          <option value="other" style="color:#D14A3E;">Other</option>
+        </select>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-cancel" id="budgetCancelBtn">Cancel</button>
+        <button type="submit" class="btn btn-save">Add</button>
+      </div>
+    </form>
+  </div>
+</div>
+
 <script type="module">
   // ============================================================
   // CLOUD SYNC CONFIG — paste your Firebase project config below.
@@ -652,20 +738,98 @@
     storageBucket: "beepaboop600.firebasestorage.app",
     messagingSenderId: "341983136727",
     appId: "1:341983136727:web:6364e709fe1737e3c75992"
-  };
+  
+};
   // A "folder name" for your data in the shared database. Change this to
   // any string only you know if you want a little extra obscurity.
   const SYNC_KEY = "my-hours-tracker";
   // ============================================================
 
   const STORAGE_KEY = 'hourTrackerEntries_v1';
+  const BUDGET_KEY = 'hourTrackerBudget_v1';
+  const BUDGET_ARCHIVE_KEY = 'hourTrackerBudgetArchive_v1';
   const GOAL = 90;
   const RING_R = 92;
   const RING_CIRC = 2 * Math.PI * RING_R;
+  const BUDGET_RING_R = 97;
+  const BUDGET_GOAL = 3600;
+  const CATEGORIES = [
+    { key:'savings',   label:'Savings',    color:'#B79CED' }, // purple
+    { key:'loans',     label:'Loans',      color:'#4F86C6' }, // blue
+    { key:'groceries', label:'Groceries',  color:'#6FBE8E' }, // green
+    { key:'gas',       label:'Gas',        color:'#FFD166' }, // yellow
+    { key:'food',      label:'Food',       color:'#FF9F5A' }, // orange
+    { key:'subscription', label:'Subscription', color:'#000000' }, // black — auto-renews each month
+    { key:'other',     label:'Other',      color:'#FF6B6B' }  // red
+  ];
 
   let entries = [];
+  let budgetData = null;      // { month:'YYYY-MM', categories:{...}, total:number }
+  let budgetArchive = {};     // { 'YYYY-MM': { total, categories, percentages } }
   let cloudEnabled = false;
-  let saveEntries = (list) => { writeLocal(list); }; // reassigned below if cloud is enabled
+  let persist = () => { writeLocal(entries); writeLocalBudget(budgetData); writeLocalBudgetArchive(budgetArchive); }; // reassigned below if cloud is enabled
+
+  function emptyCategories(){
+    const c = {};
+    CATEGORIES.forEach(cat => c[cat.key] = 0);
+    return c;
+  }
+  function currentMonthKey(){
+    return `${curYear}-${String(curMonth+1).padStart(2,'0')}`;
+  }
+  function readLocalBudget(){
+    try{
+      const raw = localStorage.getItem(BUDGET_KEY);
+      return raw ? JSON.parse(raw) : null;
+    }catch(e){ return null; }
+  }
+  function writeLocalBudget(b){
+    if(b) localStorage.setItem(BUDGET_KEY, JSON.stringify(b));
+  }
+  function readLocalBudgetArchive(){
+    try{
+      const raw = localStorage.getItem(BUDGET_ARCHIVE_KEY);
+      return raw ? JSON.parse(raw) : {};
+    }catch(e){ return {}; }
+  }
+  function writeLocalBudgetArchive(a){
+    localStorage.setItem(BUDGET_ARCHIVE_KEY, JSON.stringify(a || {}));
+  }
+  // If the stored running total belongs to a previous month, snapshot it
+  // into the archive (with each category's % of that month's total) and
+  // start a fresh total for the current month. "Subscription" is the only
+  // category that automatically re-applies into the new month; every other
+  // category resets to zero. Returns true if it rolled.
+  function applyBudgetRollover(){
+    const key = currentMonthKey();
+    if(!budgetData){
+      budgetData = { month: key, categories: emptyCategories(), total: 0 };
+      return false;
+    }
+    if(budgetData.month === key) return false;
+
+    const oldTotal = Number(budgetData.total) || 0;
+    const oldCats = budgetData.categories || emptyCategories();
+    const percentages = {};
+    CATEGORIES.forEach(c => {
+      const val = Number(oldCats[c.key]) || 0;
+      percentages[c.key] = oldTotal !== 0 ? (val / oldTotal) * 100 : 0;
+    });
+    budgetArchive = Object.assign({}, budgetArchive, {
+      [budgetData.month]: { total: oldTotal, categories: oldCats, percentages }
+    });
+
+    const freshCategories = emptyCategories();
+    const subscriptionCarry = Number(oldCats.subscription) || 0;
+    freshCategories.subscription = subscriptionCarry;
+
+    budgetData = { month: key, categories: freshCategories, total: subscriptionCarry };
+    return true;
+  }
+  function fmtMoney(n){
+    const sign = n < 0 ? '-' : '';
+    return `${sign}$${Math.abs(Math.round(n * 100) / 100).toFixed(2)}`;
+  }
 
   function readLocal(){
     try{
@@ -697,6 +861,11 @@
   function fmtNum(n){
     n = Math.round(n * 100) / 100;
     return (n % 1 === 0) ? String(n) : String(n.toFixed(2)).replace(/0+$/,'').replace(/\.$/,'');
+  }
+  // Main-page visuals truncate (not round) decimals — the underlying data
+  // keeps full precision, this is display-only.
+  function truncNum(n){
+    return String(Math.trunc(n));
   }
   function dateKey(d){
     const y = d.getFullYear();
@@ -760,10 +929,80 @@
     return totalHours / weekSpan;
   }
 
+  // Draws colored category segments onto a ring's <svg>. fillFraction is
+  // how much of the full circle to use (1 = completely filled). Segments
+  // are sized proportionally to each category's positive share of the
+  // total; categories at or below $0 don't get a visible segment.
+  function paintRing(svgId, categories, fillFraction, radius){
+    const svg = document.getElementById(svgId);
+    if(!svg) return;
+    svg.querySelectorAll('.ring-segment').forEach(el => el.remove());
+
+    const circumference = 2 * Math.PI * radius;
+    const positiveSum = CATEGORIES.reduce((s,c) => s + Math.max(0, Number(categories[c.key]) || 0), 0);
+    if(positiveSum <= 0) return;
+
+    let cumulative = 0;
+    CATEGORIES.forEach(c => {
+      const val = Math.max(0, Number(categories[c.key]) || 0);
+      if(val <= 0) return;
+      const share = (val / positiveSum) * fillFraction;
+      const segLen = share * circumference;
+      const seg = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+      seg.setAttribute('class', 'ring-segment');
+      seg.setAttribute('cx', '100');
+      seg.setAttribute('cy', '100');
+      seg.setAttribute('r', String(radius));
+      seg.setAttribute('stroke', c.color);
+      seg.setAttribute('stroke-dasharray', `${segLen} ${circumference - segLen}`);
+      seg.setAttribute('stroke-dashoffset', String(-cumulative));
+      svg.appendChild(seg);
+      cumulative += segLen;
+    });
+  }
+
+  function renderBudget(monthTotal){
+    if(!budgetData) return;
+    const cats = budgetData.categories || emptyCategories();
+    const total = Number(budgetData.total) || 0;
+    const overActive = total > BUDGET_GOAL;
+
+    const budgetRingSvg = document.getElementById('budgetRingSvg');
+    const overageHolder = document.getElementById('overageHolder');
+    const overageFill = document.getElementById('overageFill');
+    const overageNumber = document.getElementById('overageNumber');
+
+    if(overActive){
+      // Overage Protocol: hide the ring around the main circle, show a
+      // second circle with its own full ring (proportioned by category
+      // share of the actual total, no longer capped at $3,600).
+      budgetRingSvg.style.display = 'none';
+      overageHolder.style.display = 'flex';
+      paintRing('overageRingSvg', cats, 1, BUDGET_RING_R);
+
+      // Visual-only "overage number": the dollar overage scaled down by 40.
+      // The real dollar figures (in `entries`/`budgetData`) are untouched.
+      const rawOverage = total - BUDGET_GOAL;
+      const overageNumberValue = rawOverage / 40;
+      overageNumber.textContent = truncNum(overageNumberValue);
+
+      const hoursOverage = monthTotal > GOAL ? monthTotal - GOAL : 0;
+      overageFill.classList.toggle('overage-safe', overageNumberValue <= hoursOverage);
+    } else {
+      budgetRingSvg.style.display = '';
+      overageHolder.style.display = 'none';
+      overageFill.classList.remove('overage-safe');
+      const frac = Math.max(0, Math.min(1, total / BUDGET_GOAL));
+      paintRing('budgetRingSvg', cats, frac, BUDGET_RING_R);
+    }
+  }
+
   function render(){
     const all = entries;
     const monthEntries = entriesForCurrentMonth(all);
     const monthTotal = monthEntries.reduce((s,e) => s + Number(e.hours), 0);
+
+    renderBudget(monthTotal);
 
     // ---- Circle ----
     const circleFill = document.getElementById('circleFill');
@@ -776,7 +1015,7 @@
     if(isOver){
       circleFill.classList.add('over-goal');
       const overage = monthTotal - GOAL;
-      circleNumber.textContent = fmtNum(overage);
+      circleNumber.textContent = truncNum(overage);
       circleCaption.textContent = 'Good job!';
       circleCaption.classList.remove('hidden');
       ring.style.stroke = 'var(--dandelion-deep)';
@@ -784,13 +1023,16 @@
     } else {
       circleFill.classList.remove('over-goal');
       const remaining = GOAL - monthTotal;
-      circleNumber.textContent = fmtNum(remaining);
+      circleNumber.textContent = truncNum(remaining);
       circleCaption.textContent = '';
       circleCaption.classList.add('hidden');
       ring.style.stroke = 'var(--skyblue-deep)';
       const frac = Math.min(1, monthTotal / GOAL);
       ring.style.strokeDashoffset = RING_CIRC * (1 - frac);
     }
+
+    // ---- Confetti calendar background when over goal ----
+    document.querySelector('.calendar-section').classList.toggle('confetti-bg', isOver);
 
     // ---- Weekly widgets ----
     const weekStart = startOfWeek(now);
@@ -801,13 +1043,13 @@
     }, 0);
     const weekValue = document.getElementById('weekValue');
     const weekWidget = document.getElementById('weekWidget');
-    weekValue.textContent = `${fmtNum(weekTotal)}h`;
+    weekValue.textContent = `${truncNum(weekTotal)}h`;
     weekWidget.classList.toggle('alert', weekTotal > 29);
 
     const avgWeekly = computeYearlyWeeklyAvg(all);
     const avgValue = document.getElementById('avgValue');
     const avgWidget = document.getElementById('avgWidget');
-    avgValue.textContent = `${fmtNum(avgWeekly)}h`;
+    avgValue.textContent = `${truncNum(avgWeekly)}h`;
     avgWidget.classList.toggle('alert', avgWeekly > 29);
 
     // ---- Calendar ----
@@ -878,7 +1120,7 @@
 
   const tooltip = document.getElementById('tooltip');
   function showTooltip(ev, info){
-    document.getElementById('ttHours').textContent = `${fmtNum(info.hours)} hours logged`;
+    document.getElementById('ttHours').textContent = `${truncNum(info.hours)} hours logged`;
     document.getElementById('ttDesc').textContent = info.descs.join(' · ');
     tooltip.classList.add('show');
     positionTooltip(ev);
@@ -896,9 +1138,9 @@
     tooltip.classList.remove('show');
   }
 
-  // ---- Modal ----
+  // ---- Modal (hours) ----
   const overlay = document.getElementById('modalOverlay');
-  document.getElementById('logOpenBtn').addEventListener('click', () => {
+  document.getElementById('circleFill').addEventListener('click', () => {
     overlay.classList.add('open');
   });
   document.getElementById('cancelBtn').addEventListener('click', closeModal);
@@ -923,13 +1165,39 @@
       loggedAt: new Date().toISOString()
     });
     entries = updated;
-    saveEntries(updated);
+    persist();
     closeModal();
     render();
 
     const circleFill = document.getElementById('circleFill');
     circleFill.classList.add('circle-pop');
     setTimeout(() => circleFill.classList.remove('circle-pop'), 460);
+  });
+
+  // ---- Modal (money / budget) ----
+  const budgetOverlay = document.getElementById('budgetModalOverlay');
+  document.getElementById('logOpenBtn').addEventListener('click', () => {
+    budgetOverlay.classList.add('open');
+  });
+  document.getElementById('budgetCancelBtn').addEventListener('click', closeBudgetModal);
+  budgetOverlay.addEventListener('click', (e) => { if(e.target === budgetOverlay) closeBudgetModal(); });
+  function closeBudgetModal(){
+    budgetOverlay.classList.remove('open');
+    document.getElementById('budgetForm').reset();
+  }
+
+  document.getElementById('budgetForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const amount = parseFloat(document.getElementById('bAmount').value);
+    const category = document.getElementById('bCategory').value;
+    if(isNaN(amount) || !CATEGORIES.some(c => c.key === category)) return;
+
+    applyBudgetRollover(); // in case the month turned over since page load
+    budgetData.categories[category] = (Number(budgetData.categories[category]) || 0) + amount;
+    budgetData.total = (Number(budgetData.total) || 0) + amount;
+    persist();
+    closeBudgetModal();
+    render();
   });
 
   // ---- Confetti ----
@@ -982,10 +1250,12 @@
         const docRef = doc(db, "hourTracker", SYNC_KEY);
 
         cloudEnabled = true;
-        saveEntries = async (list) => {
-          writeLocal(list);
+        persist = async () => {
+          writeLocal(entries);
+          writeLocalBudget(budgetData);
+          writeLocalBudgetArchive(budgetArchive);
           try{
-            await setDoc(docRef, { entries: list, updatedAt: Date.now() });
+            await setDoc(docRef, { entries, budget: budgetData, budgetArchive, updatedAt: Date.now() });
           }catch(e){
             console.error('Cloud save failed, changes are saved locally only for now.', e);
           }
@@ -993,6 +1263,9 @@
 
         // Prime instantly from local cache, then listen for live updates.
         entries = mergedLocal();
+        budgetData = readLocalBudget();
+        budgetArchive = readLocalBudgetArchive();
+        if(applyBudgetRollover()) persist();
         render();
         setSyncBadge();
 
@@ -1000,8 +1273,14 @@
           const data = snap.exists() ? snap.data() : null;
           const cloudEntries = (data && Array.isArray(data.entries)) ? data.entries : [];
           entries = cloudEntries;
+          budgetData = (data && data.budget) ? data.budget : { month: currentMonthKey(), categories: emptyCategories(), total: 0 };
+          budgetArchive = (data && data.budgetArchive) ? data.budgetArchive : {};
           writeLocal(cloudEntries);
+          writeLocalBudget(budgetData);
+          writeLocalBudgetArchive(budgetArchive);
+          const rolled = applyBudgetRollover();
           render();
+          if(rolled) persist();
         }, err => {
           console.error('Firestore sync error, using local data.', err);
         });
@@ -1013,6 +1292,9 @@
     // Local-only fallback (no config, or Firebase failed to load)
     cloudEnabled = false;
     entries = mergedLocal();
+    budgetData = readLocalBudget();
+    budgetArchive = readLocalBudgetArchive();
+    if(applyBudgetRollover()) persist();
     render();
     setSyncBadge();
   }

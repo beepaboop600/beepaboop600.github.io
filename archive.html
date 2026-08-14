@@ -202,6 +202,58 @@
     margin-bottom: 14px;
   }
 
+  .budget-summary{
+    background: var(--lavender);
+    border-radius: 16px;
+    padding: 14px 16px;
+    margin-bottom: 16px;
+  }
+  .budget-summary.in-progress{
+    background: var(--pink, #FFD6E8);
+  }
+  .budget-summary-head{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .budget-summary-title{
+    font-family:'Baloo 2', sans-serif;
+    font-size: 15px;
+    font-weight:700;
+    color: var(--plum);
+  }
+  .budget-summary-total{
+    font-family:'Baloo 2', sans-serif;
+    font-size: 16px;
+    font-weight:700;
+    color: var(--plum);
+  }
+  .budget-cats{
+    display:flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .budget-cat-chip{
+    display:inline-flex;
+    align-items:center;
+    gap: 6px;
+    background: var(--panel);
+    border-radius: 999px;
+    padding: 5px 12px 5px 8px;
+    font-size: 12px;
+    font-weight:700;
+    color: var(--plum);
+  }
+  .budget-cat-dot{
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
   table{
     width:100%;
     border-collapse: separate;
@@ -330,17 +382,48 @@
     storageBucket: "beepaboop600.firebasestorage.app",
     messagingSenderId: "341983136727",
     appId: "1:341983136727:web:6364e709fe1737e3c75992"
-  };
+  
+};
   const SYNC_KEY = "my-hours-tracker";
   // ============================================================
 
   const STORAGE_KEY = 'hourTrackerEntries_v1';
   const DELETED_KEY = 'hourTrackerDeleted_v1';
+  const BUDGET_KEY = 'hourTrackerBudget_v1';
+  const BUDGET_ARCHIVE_KEY = 'hourTrackerBudgetArchive_v1';
+  const BUDGET_GOAL = 3600;
   const monthNames = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+  const CATEGORIES = [
+    { key:'savings',   label:'Savings',    color:'#B79CED' },
+    { key:'loans',     label:'Loans',      color:'#4F86C6' },
+    { key:'groceries', label:'Groceries',  color:'#6FBE8E' },
+    { key:'gas',       label:'Gas',        color:'#FFD166' },
+    { key:'food',      label:'Food',       color:'#FF9F5A' },
+    { key:'subscription', label:'Subscription', color:'#000000' },
+    { key:'other',     label:'Other',      color:'#FF6B6B' }
+  ];
+
+  const now = new Date();
+  const curYear = now.getFullYear();
+  const curMonth = now.getMonth();
+  function currentMonthKey(){
+    return `${curYear}-${String(curMonth+1).padStart(2,'0')}`;
+  }
+  function emptyCategories(){
+    const c = {};
+    CATEGORIES.forEach(cat => c[cat.key] = 0);
+    return c;
+  }
+  function fmtMoney(n){
+    const sign = n < 0 ? '-' : '';
+    return `${sign}$${Math.abs(Math.round(n * 100) / 100).toFixed(2)}`;
+  }
 
   let entries = [];
+  let budgetData = null;
+  let budgetArchive = {};
   let cloudEnabled = false;
-  let saveEntries = (list) => { writeLocal(list); };
+  let persist = () => { writeLocal(entries); writeLocalBudget(budgetData); writeLocalBudgetArchive(budgetArchive); };
 
   function readLocal(){
     try{
@@ -362,6 +445,54 @@
   }
   function mergedLocal(){
     return readLocal();
+  }
+  function readLocalBudget(){
+    try{
+      const raw = localStorage.getItem(BUDGET_KEY);
+      return raw ? JSON.parse(raw) : null;
+    }catch(e){ return null; }
+  }
+  function writeLocalBudget(b){
+    if(b) localStorage.setItem(BUDGET_KEY, JSON.stringify(b));
+  }
+  function readLocalBudgetArchive(){
+    try{
+      const raw = localStorage.getItem(BUDGET_ARCHIVE_KEY);
+      return raw ? JSON.parse(raw) : {};
+    }catch(e){ return {}; }
+  }
+  function writeLocalBudgetArchive(a){
+    localStorage.setItem(BUDGET_ARCHIVE_KEY, JSON.stringify(a || {}));
+  }
+  // Mirrors the same rollover logic as index.html, so opening the archive
+  // first (on a fresh device, say) still closes out a finished month.
+  // "Subscription" is the only category that automatically re-applies into
+  // the new month; every other category resets to zero.
+  function applyBudgetRollover(){
+    const key = currentMonthKey();
+    if(!budgetData){
+      budgetData = { month: key, categories: emptyCategories(), total: 0 };
+      return false;
+    }
+    if(budgetData.month === key) return false;
+
+    const oldTotal = Number(budgetData.total) || 0;
+    const oldCats = budgetData.categories || emptyCategories();
+    const percentages = {};
+    CATEGORIES.forEach(c => {
+      const val = Number(oldCats[c.key]) || 0;
+      percentages[c.key] = oldTotal !== 0 ? (val / oldTotal) * 100 : 0;
+    });
+    budgetArchive = Object.assign({}, budgetArchive, {
+      [budgetData.month]: { total: oldTotal, categories: oldCats, percentages }
+    });
+
+    const freshCategories = emptyCategories();
+    const subscriptionCarry = Number(oldCats.subscription) || 0;
+    freshCategories.subscription = subscriptionCarry;
+
+    budgetData = { month: key, categories: freshCategories, total: subscriptionCarry };
+    return true;
   }
 
   function setSyncBadge(){
@@ -390,22 +521,52 @@
   const summaryBar = document.getElementById('summaryBar');
   const content = document.getElementById('archiveContent');
 
+  function budgetSummaryHtml(label, data, inProgress){
+    const total = Number(data.total) || 0;
+    const cats = data.categories || emptyCategories();
+    const pct = data.percentages || (() => {
+      const p = {};
+      CATEGORIES.forEach(c => { p[c.key] = total !== 0 ? ((Number(cats[c.key])||0) / total) * 100 : 0; });
+      return p;
+    })();
+    const chips = CATEGORIES.map(c => {
+      const val = Number(cats[c.key]) || 0;
+      const p = Number(pct[c.key]) || 0;
+      return `<span class="budget-cat-chip"><span class="budget-cat-dot" style="background:${c.color};"></span>${c.label} ${fmtMoney(val)} · ${p.toFixed(1)}%</span>`;
+    }).join('');
+    return `
+      <div class="budget-summary${inProgress ? ' in-progress' : ''}">
+        <div class="budget-summary-head">
+          <span class="budget-summary-title">${label}${inProgress ? ' (in progress)' : ''}</span>
+          <span class="budget-summary-total">${fmtMoney(total)}${!inProgress && total > BUDGET_GOAL ? ` <span style="color:#C6483C;">(${fmtMoney(total - BUDGET_GOAL)} over)</span>` : ''}</span>
+        </div>
+        <div class="budget-cats">${chips}</div>
+      </div>`;
+  }
+
   function renderArchive(){
-    if(entries.length === 0){
+    const curKey = currentMonthKey();
+    const hasCurrentBudget = budgetData && Number(budgetData.total) !== 0;
+    const hasArchivedBudget = Object.keys(budgetArchive).length > 0;
+    const hasAnyData = entries.length > 0 || hasArchivedBudget || hasCurrentBudget;
+
+    if(!hasAnyData){
       summaryBar.textContent = '';
       content.innerHTML = `
         <div class="empty-state">
           <span class="emoji">🌱</span>
           <h3>No entries yet</h3>
-          <div>Log some hours from the main page and they'll show up here forever.</div>
+          <div>Log some hours or money from the main page and they'll show up here forever.</div>
         </div>`;
       return;
     }
 
     const totalHours = entries.reduce((s,e) => s + Number(e.hours), 0);
-    summaryBar.textContent = `${entries.length} entries logged · ${fmtNum(totalHours)} total hours`;
+    summaryBar.textContent = entries.length
+      ? `${entries.length} entries logged · ${fmtNum(totalHours)} total hours`
+      : '';
 
-    // group by year-month
+    // group hours by year-month
     const groups = {};
     entries.forEach(e => {
       const d = new Date(e.date + 'T00:00:00');
@@ -414,18 +575,32 @@
       groups[key].push(e);
     });
 
-    const sortedKeys = Object.keys(groups).sort().reverse(); // most recent month first
+    // union of months that have hours and/or an archived budget snapshot
+    const allKeys = new Set([...Object.keys(groups), ...Object.keys(budgetArchive)]);
+    const sortedKeys = Array.from(allKeys).sort().reverse(); // most recent month first
 
     content.innerHTML = '';
+
+    // live, still-accumulating current month budget (if it has anything logged)
+    if(hasCurrentBudget && !sortedKeys.includes(curKey)){
+      const liveBlock = document.createElement('div');
+      liveBlock.className = 'month-block';
+      const [y, m] = curKey.split('-').map(Number);
+      liveBlock.innerHTML = `<h2>${monthNames[m-1]} ${y}</h2>` + budgetSummaryHtml('Budget', budgetData, true);
+      content.appendChild(liveBlock);
+    }
+
     sortedKeys.forEach(key => {
       const [y, m] = key.split('-').map(Number);
-      const list = groups[key].slice().sort((a,b) => a.date.localeCompare(b.date));
+      const list = (groups[key] || []).slice().sort((a,b) => a.date.localeCompare(b.date));
       const monthTotal = list.reduce((s,e) => s + Number(e.hours), 0);
+      const isCurrent = key === curKey;
+      const budgetForMonth = isCurrent ? budgetData : budgetArchive[key];
 
       const block = document.createElement('div');
       block.className = 'month-block';
-      block.innerHTML = `
-        <h2>${monthNames[m-1]} ${y}</h2>
+
+      const hoursSection = list.length ? `
         <div class="month-total">${fmtNum(monthTotal)} hours logged across ${list.length} ${list.length === 1 ? 'entry' : 'entries'}</div>
         <table>
           <thead>
@@ -441,8 +616,13 @@
               </tr>
             `).join('')}
           </tbody>
-        </table>
-      `;
+        </table>` : `<div class="month-total">No hours logged this month</div>`;
+
+      const budgetSection = budgetForMonth
+        ? budgetSummaryHtml('Budget', budgetForMonth, isCurrent)
+        : '';
+
+      block.innerHTML = `<h2>${monthNames[m-1]} ${y}</h2>${budgetSection}${hoursSection}`;
       content.appendChild(block);
     });
   }
@@ -454,7 +634,7 @@
     if(!confirm('Delete this entry? This cannot be undone.')) return;
     const remaining = entries.filter(e => String(e.id) !== String(id));
     entries = remaining;
-    saveEntries(remaining);
+    persist();
     const deleted = readDeletedIds();
     if(!deleted.includes(String(id))){
       deleted.push(String(id));
@@ -481,16 +661,21 @@
         const docRef = doc(db, "hourTracker", SYNC_KEY);
 
         cloudEnabled = true;
-        saveEntries = async (list) => {
-          writeLocal(list);
+        persist = async () => {
+          writeLocal(entries);
+          writeLocalBudget(budgetData);
+          writeLocalBudgetArchive(budgetArchive);
           try{
-            await setDoc(docRef, { entries: list, updatedAt: Date.now() });
+            await setDoc(docRef, { entries, budget: budgetData, budgetArchive, updatedAt: Date.now() });
           }catch(e){
             console.error('Cloud save failed, changes are saved locally only for now.', e);
           }
         };
 
         entries = mergedLocal();
+        budgetData = readLocalBudget();
+        budgetArchive = readLocalBudgetArchive();
+        if(applyBudgetRollover()) persist();
         renderArchive();
         setSyncBadge();
 
@@ -498,8 +683,14 @@
           const data = snap.exists() ? snap.data() : null;
           const cloudEntries = (data && Array.isArray(data.entries)) ? data.entries : [];
           entries = cloudEntries;
+          budgetData = (data && data.budget) ? data.budget : { month: currentMonthKey(), categories: emptyCategories(), total: 0 };
+          budgetArchive = (data && data.budgetArchive) ? data.budgetArchive : {};
           writeLocal(cloudEntries);
+          writeLocalBudget(budgetData);
+          writeLocalBudgetArchive(budgetArchive);
+          const rolled = applyBudgetRollover();
           renderArchive();
+          if(rolled) persist();
         }, err => {
           console.error('Firestore sync error, using local data.', err);
         });
@@ -510,6 +701,9 @@
     }
     cloudEnabled = false;
     entries = mergedLocal();
+    budgetData = readLocalBudget();
+    budgetArchive = readLocalBudgetArchive();
+    if(applyBudgetRollover()) persist();
     renderArchive();
     setSyncBadge();
   }
