@@ -3,29 +3,28 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Hours Tracker</title>
+<title>Ways of Survival — Scenario Tracker</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Chakra+Petch:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root{
-    --cream:#FBF6ED;
-    --panel:#FFFFFF;
-    --lavender:#F0EAFB;
-    --lavender-line:#E4DAF7;
-    --dandelion:#FFD166;
-    --dandelion-deep:#F5B93F;
-    --mint:#AEE6D3;
-    --mint-deep:#7FCDBB;
-    --skyblue:#AAD4F5;
-    --skyblue-deep:#5B9FD9;
-    --coral:#FF7A70;
-    --coral-bg:#FFE3E0;
-    --plum:#4A3F55;
-    --plum-soft:#8B7F99;
-    --pink:#FFD6E8;
-    --shadow: 0 10px 30px rgba(74,63,85,0.12);
-    --radius-lg: 28px;
-    --radius-md: 18px;
+    --void:#06060F;
+    --deep:#0B0C1A;
+    --panel:rgba(16,19,38,0.86);
+    --panel-solid:#101326;
+    --sys:#7FE6F5;
+    --sys-dim:rgba(127,230,245,0.30);
+    --sys-faint:rgba(127,230,245,0.10);
+    --gold:#F2C14E;
+    --gold-dim:rgba(242,193,78,0.35);
+    --coin:#FFD86B;
+    --jade:#68E0AC;
+    --scarlet:#FF5C6E;
+    --violet:#A98BFF;
+    --ink:#E9EDFF;
+    --muted:#8C95C4;
+    --radius:4px;
   }
 
   *{box-sizing:border-box;}
@@ -34,636 +33,1129 @@
     margin:0;
     min-height:100vh;
     background:
-      radial-gradient(circle at 8% 12%, #FFF1DA 0%, transparent 40%),
-      radial-gradient(circle at 92% 8%, #E7F7F1 0%, transparent 38%),
-      radial-gradient(circle at 85% 90%, #F5E9FF 0%, transparent 42%),
-      var(--cream);
-    font-family:'Quicksand', sans-serif;
-    color:var(--plum);
-    padding: 18px 16px 60px;
+      radial-gradient(ellipse 60% 40% at 18% 8%, rgba(127,230,245,0.11) 0%, transparent 60%),
+      radial-gradient(ellipse 55% 45% at 88% 16%, rgba(169,139,255,0.13) 0%, transparent 62%),
+      radial-gradient(ellipse 70% 40% at 45% 58%, rgba(93,110,210,0.10) 0%, transparent 65%),
+      radial-gradient(ellipse 60% 35% at 60% 100%, rgba(242,193,78,0.07) 0%, transparent 60%),
+      var(--void);
+    background-attachment: fixed;
+    font-family:'Chakra Petch', sans-serif;
+    color:var(--ink);
+    padding: 20px 16px 70px;
+    font-size: 15px;
   }
 
-  .wrap{
-    max-width: 880px;
-    margin: 0 auto;
+  /* ---------- constellation sky ---------- */
+  .sky{
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    overflow: hidden;
+  }
+  .sky svg{ width:100%; height:100%; display:block; }
+  .sky .star{ fill:#FFFFFF; }
+  .sky .twinkle{ animation: twinkle 4s ease-in-out infinite; }
+  @keyframes twinkle{
+    0%,100%{ opacity: var(--o, 0.6); }
+    50%{ opacity: calc(var(--o, 0.6) * 0.25); }
+  }
+  .sky .c-line{
+    stroke: rgba(127,230,245,0.30);
+    stroke-width: 0.9;
+    fill: none;
+  }
+  .sky .c-star{
+    fill: #DCF4FF;
+    filter: drop-shadow(0 0 4px rgba(127,230,245,0.9));
+  }
+  .sky .c-star.bright{ fill:#FFF3D0; filter: drop-shadow(0 0 7px rgba(242,193,78,0.85)); }
+  .sky .c-name{
+    fill: rgba(127,230,245,0.30);
+    font-family:'Cinzel', serif;
+    font-size: 9px;
+    letter-spacing: 0.22em;
   }
 
+  .wrap{ max-width: 1000px; margin: 0 auto; position: relative; z-index: 1; }
+
+  /* ---------- system window chrome ---------- */
+  .win{
+    position:relative;
+    background: var(--panel);
+    border: 1px solid var(--sys-dim);
+    border-radius: var(--radius);
+    padding: 20px 20px 22px;
+    margin-bottom: 20px;
+    backdrop-filter: blur(6px);
+  }
+  .win::before, .win::after{
+    content:'';
+    position:absolute;
+    width: 14px; height: 14px;
+    border: 1px solid var(--sys);
+    opacity: 0.75;
+    pointer-events:none;
+  }
+  .win::before{ top:-1px; left:-1px; border-right:none; border-bottom:none; }
+  .win::after{ bottom:-1px; right:-1px; border-left:none; border-top:none; }
+  .win-title{
+    font-family:'Cinzel', serif;
+    font-weight:600;
+    font-size: 17px;
+    letter-spacing: 0.06em;
+    margin: 0 0 4px;
+    color: var(--sys);
+  }
+  .win-sub{
+    font-size: 13px;
+    color: var(--muted);
+    margin-bottom: 16px;
+    letter-spacing: 0.02em;
+  }
+
+  /* ---------- header ---------- */
   header.top{
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    gap:10px;
-    margin: 6px 0 28px;
+    text-align:center;
+    margin: 4px 0 6px;
   }
-  header.top .blob-icon{
-    font-size: 30px;
-    transform: rotate(-8deg);
+  header.top .eyebrow{
+    font-size: 12px;
+    letter-spacing: 0.34em;
+    color: var(--sys);
+    opacity: 0.8;
   }
   header.top h1{
-    font-family:'Baloo 2', sans-serif;
+    font-family:'Cinzel', serif;
     font-weight:700;
-    font-size: clamp(22px, 5vw, 30px);
-    margin:0;
-    letter-spacing: 0.5px;
+    font-size: clamp(24px, 5.4vw, 38px);
+    margin: 6px 0 4px;
+    letter-spacing: 0.04em;
+    text-shadow: 0 0 26px rgba(127,230,245,0.35);
+  }
+  header.top .reader{
+    font-size: 13.5px;
+    color: var(--muted);
+    letter-spacing: 0.1em;
   }
   .month-label{
     text-align:center;
-    color: var(--plum-soft);
+    color: var(--gold);
     font-weight:600;
-    margin: -18px 0 26px;
-    font-size: 14px;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-  }
-
-  /* HERO CIRCLE */
-  .hero{
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    flex-wrap: wrap;
-    gap: 48px;
-    margin-bottom: 34px;
-  }
-  .circle-holder{
-    position:relative;
-    width: clamp(210px, 46vw, 270px);
-    height: clamp(210px, 46vw, 270px);
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    animation: breathe 5s ease-in-out infinite;
-  }
-  @keyframes breathe{
-    0%,100%{ transform: scale(1); }
-    50%{ transform: scale(1.018); }
-  }
-  .ring-svg{
-    position:absolute;
-    inset:0;
-    width:100%;
-    height:100%;
-    transform: rotate(-90deg);
-  }
-  .ring-track{
-    fill:none;
-    stroke: rgba(74,63,85,0.08);
-    stroke-width: 8;
-  }
-  .ring-progress{
-    fill:none;
-    stroke-width: 8;
-    stroke-linecap: round;
-    transition: stroke-dashoffset 0.6s ease, stroke 0.6s ease;
-  }
-  .budget-ring-svg{
-    position:absolute;
-    inset:0;
-    width:100%;
-    height:100%;
-    transform: rotate(-90deg);
-    overflow: visible;
-  }
-  .budget-ring-track{
-    fill:none;
-    stroke: rgba(74,63,85,0.07);
-    stroke-width: 5;
-  }
-  .ring-segment{
-    fill:none;
-    stroke-width: 5;
-    transition: stroke-dasharray 0.6s ease, stroke-dashoffset 0.6s ease;
-  }
-  .circle-fill.overage-fill{
-    background: radial-gradient(circle at 32% 28%, #FFD9D4 0%, var(--coral) 55%, #E1483A 100%);
-    box-shadow: inset 0 -10px 18px rgba(0,0,0,0.06), 0 14px 26px rgba(255,122,112,0.4);
-  }
-  .circle-fill.overage-fill.overage-safe{
-    background: radial-gradient(circle at 32% 28%, #DFF3E7 0%, #6FBE8E 55%, #3E9265 100%);
-    box-shadow: inset 0 -10px 18px rgba(0,0,0,0.06), 0 14px 26px rgba(111,190,142,0.4);
-  }
-  .overage-holder{
-    display:none;
-  }
-  .circle-fill{
-    width: 78%;
-    height: 78%;
-    border-radius: 50%;
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    justify-content:center;
-    text-align:center;
-    background: radial-gradient(circle at 32% 28%, #E4F3FD 0%, var(--skyblue) 55%, var(--skyblue-deep) 100%);
-    box-shadow: inset 0 -10px 18px rgba(0,0,0,0.07), 0 14px 26px rgba(91,159,217,0.35);
-    transition: background 0.7s ease, box-shadow 0.7s ease;
-    padding: 10px;
-    position: relative;
-    overflow: visible;
-    cursor: pointer;
-  }
-  .circle-fill.over-goal{
-    background: radial-gradient(circle at 32% 28%, #FFE6A8 0%, var(--dandelion) 55%, var(--dandelion-deep) 100%);
-    box-shadow: inset 0 -10px 18px rgba(0,0,0,0.06), 0 14px 26px rgba(245,185,63,0.4);
-  }
-  .circle-number{
-    font-family:'Baloo 2', sans-serif;
-    font-weight: 800;
-    font-size: clamp(38px, 11vw, 54px);
-    line-height:1;
-  }
-  .circle-caption{
-    font-weight:600;
-    font-size: clamp(12px, 3vw, 14px);
-    margin-top: 6px;
-    max-width: 140px;
-    opacity: 0.85;
-  }
-  .circle-caption.hidden{
-    display:none;
-  }
-  .circle-pop{
-    animation: pop 0.45s ease;
-  }
-  @keyframes pop{
-    0%{ transform: scale(1); }
-    35%{ transform: scale(1.09); }
-    100%{ transform: scale(1); }
-  }
-
-  .confetti-layer{
-    position:fixed;
-    inset:0;
-    pointer-events:none;
-    overflow:hidden;
-    z-index:9999;
-  }
-  .confetti-piece{
-    position:fixed;
-    top:0;
-    left:0;
-    width:11px;
-    height:20px;
-    margin:-10px 0 0 -5px;
-    opacity:1;
-    animation: confetti-burst 1300ms cubic-bezier(0.15,0.8,0.3,1) forwards;
-  }
-  @keyframes confetti-burst{
-    0%{ transform: translate(0,0) rotate(0deg) scale(1); opacity:1; }
-    75%{ opacity:1; }
-    100%{ transform: translate(var(--tx), var(--ty)) rotate(var(--rot)) scale(0.55); opacity:0; }
-  }
-
-  /* WIDGETS */
-  .widgets{
-    display:grid;
-    grid-template-columns: 1fr;
-    gap: 14px;
-    margin-bottom: 34px;
-  }
-  @media (min-width: 680px){
-    .widgets{ grid-template-columns: repeat(3, 1fr); }
-  }
-  .widget{
-    background: var(--panel);
-    border-radius: var(--radius-md);
-    box-shadow: var(--shadow);
-    padding: 18px 16px;
-    text-align:center;
-    display:flex;
-    flex-direction:column;
-    justify-content:center;
-    gap:6px;
-    min-height: 108px;
-  }
-  .widget .w-label{
+    margin: 10px 0 24px;
     font-size: 12.5px;
-    font-weight:700;
-    text-transform: uppercase;
-    letter-spacing: 0.8px;
-    color: var(--plum-soft);
+    letter-spacing: 0.26em;
   }
-  .widget .w-value{
-    font-family:'Baloo 2', sans-serif;
-    font-weight:700;
-    font-size: 30px;
-    color: var(--plum);
-    transition: color 0.3s ease;
-  }
-  .widget.alert .w-value{
-    color: var(--coral);
-  }
-  .widget.alert{
-    background: var(--coral-bg);
-  }
-  .widget.log-widget{
-    background: linear-gradient(160deg, var(--pink), #FCE8F2);
+  .sound-toggle{
+    position:absolute;
+    right: 16px; top: 16px;
+    border: 1px solid var(--sys-dim);
+    background: rgba(16,19,38,0.8);
+    color: var(--sys);
+    border-radius: var(--radius);
+    width: 38px; height: 34px;
+    font-size: 15px;
     cursor:pointer;
-    border: none;
-    align-items:center;
-  }
-  .widget.log-widget .w-plus{
-    font-family:'Baloo 2', sans-serif;
-    font-size: 36px;
     line-height:1;
+    z-index: 2;
   }
-  .widget.log-widget .w-label{ color: #A85C82; }
-  .widget.log-widget:hover{ transform: translateY(-2px); box-shadow: 0 14px 26px rgba(168,92,130,0.25); }
-  .widget.log-widget{ transition: transform 0.2s ease, box-shadow 0.2s ease; }
 
-  /* CALENDAR */
-  .calendar-section{
-    background: var(--panel);
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow);
-    padding: 22px 18px 26px;
-    margin-bottom: 26px;
-    transition: background-color 0.4s ease;
+  /* ---------- membership bar ---------- */
+  .member-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap: 14px;
+    flex-wrap:wrap;
+    margin-bottom: 10px;
   }
-  .calendar-section.confetti-bg{
-    background-color: var(--panel);
-    background-image:
-      radial-gradient(circle, #FFD166 3px, transparent 3.5px),
-      radial-gradient(circle, #FF8577 3px, transparent 3.5px),
-      radial-gradient(circle, #AEE6D3 3px, transparent 3.5px),
-      radial-gradient(circle, #AAD4F5 3px, transparent 3.5px),
-      radial-gradient(circle, #FFD6E8 3px, transparent 3.5px),
-      radial-gradient(circle, #C9B6F2 3px, transparent 3.5px);
-    background-repeat: repeat;
-    background-size: 46px 46px;
-    background-position: 0 0, 12px 20px, 24px 6px, 36px 30px, 6px 34px, 30px 12px;
+  .member-left{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+  .member-chip{
+    background: linear-gradient(135deg, rgba(242,193,78,0.22), rgba(242,193,78,0.06));
+    border: 1px solid var(--gold-dim);
+    color: var(--gold);
+    font-size: 12px;
+    font-weight:700;
+    padding: 4px 11px;
+    letter-spacing: 0.12em;
+    border-radius: var(--radius);
   }
-  .calendar-section h2{
-    font-family:'Baloo 2', sans-serif;
-    font-size: 19px;
-    margin: 0 0 16px;
-    text-align:center;
+  .member-title{
+    font-family:'Cinzel', serif;
+    font-size: 16.5px;
+    font-weight:600;
   }
-  .cal-grid{
-    display:grid;
-    grid-template-columns: repeat(7, 1fr);
-    gap: 6px;
+  .member-xp{ font-size: 12.5px; color: var(--muted); letter-spacing:0.05em; }
+  .xp-track{
+    height: 8px;
+    background: rgba(127,230,245,0.10);
+    border: 1px solid var(--sys-faint);
+    overflow:hidden;
   }
-  .cal-dow{
+  .xp-fill{
+    height:100%;
+    width:0%;
+    background: linear-gradient(90deg, var(--sys), var(--violet), var(--gold));
+    box-shadow: 0 0 14px rgba(127,230,245,0.5);
+    transition: width 0.8s cubic-bezier(.2,.9,.3,1);
+  }
+
+  /* ---------- main scenario map ---------- */
+  .scenario-win{
+    border-color: var(--gold-dim);
+    background:
+      linear-gradient(180deg, rgba(242,193,78,0.06), transparent 40%),
+      var(--panel);
+  }
+  .scenario-win::before, .scenario-win::after{ border-color: var(--gold); }
+  .scn-head{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    gap: 14px;
+    flex-wrap:wrap;
+    border-bottom: 1px solid var(--sys-faint);
+    padding-bottom: 14px;
+    margin-bottom: 16px;
+  }
+  .scn-tag{
+    font-size: 11.5px;
+    letter-spacing: 0.24em;
+    color: var(--gold);
+    margin-bottom: 6px;
+  }
+  .scn-name{
+    font-family:'Cinzel', serif;
+    font-size: clamp(22px, 4.6vw, 32px);
+    font-weight:700;
+    line-height:1.15;
+    margin: 0;
+    text-shadow: 0 0 24px rgba(242,193,78,0.28);
+  }
+  .scn-meta{
+    text-align:right;
+    font-size: 12.5px;
+    color: var(--muted);
+    line-height:1.7;
+    min-width: 150px;
+  }
+  .scn-meta b{ color: var(--ink); font-weight:600; }
+  .scn-meta .diff{ color: var(--scarlet); font-weight:700; }
+
+  .scn-conditions{
+    font-size: 13.5px;
+    line-height:1.85;
+    color: var(--muted);
+    margin-bottom: 20px;
+  }
+  .scn-conditions .k{ color: var(--sys); letter-spacing:0.06em; }
+  .scn-conditions .v{ color: var(--ink); }
+  .scn-conditions .fail{ color: var(--scarlet); }
+
+  /* map */
+  .map{
+    position:relative;
+    padding: 34px 6px 8px;
+    overflow-x:auto;
+    overflow-y:visible;
+  }
+  .map-rail{
+    position:relative;
+    min-width: 640px;
+    height: 96px;
+  }
+  .map-line{
+    position:absolute;
+    left: 5%;
+    right: 5%;
+    top: 34px;
+    height: 2px;
+    background: rgba(140,149,196,0.28);
+  }
+  .map-line-fill{
+    position:absolute;
+    left: 5%;
+    top: 34px;
+    height: 2px;
+    background: linear-gradient(90deg, var(--jade), var(--gold));
+    box-shadow: 0 0 12px rgba(242,193,78,0.6);
+    transition: width 1s cubic-bezier(.2,.9,.3,1);
+  }
+  .node{
+    position:absolute;
+    top: 34px;
+    transform: translate(-50%, -50%);
+    width: 15px; height: 15px;
+    border-radius: 50%;
+    background: var(--deep);
+    border: 2px solid rgba(140,149,196,0.5);
+    transition: all 0.5s ease;
+  }
+  .node.reached{
+    background: var(--jade);
+    border-color: var(--jade);
+    box-shadow: 0 0 14px rgba(104,224,172,0.8);
+  }
+  .node.final{ width: 19px; height: 19px; border-color: var(--gold); }
+  .node.final.reached{ background: var(--gold); box-shadow: 0 0 22px rgba(242,193,78,0.9); }
+  .node-label{
+    position:absolute;
+    top: 52px;
+    transform: translateX(-50%);
+    width: 104px;
     text-align:center;
     font-size: 11px;
+    line-height:1.35;
+    color: var(--muted);
+    letter-spacing: 0.02em;
+    transition: color 0.4s ease;
+  }
+  .node-label.reached{ color: var(--jade); }
+  .node-label .h{ display:block; font-size: 10px; opacity:0.6; margin-top:2px; }
+  .avatar{
+    position:absolute;
+    top: 34px;
+    transform: translate(-50%, -140%);
+    font-size: 21px;
+    transition: left 1s cubic-bezier(.2,.9,.3,1);
+    filter: drop-shadow(0 0 10px rgba(127,230,245,0.9));
+    z-index: 2;
+  }
+  .avatar-name{
+    position:absolute;
+    top: -6px;
+    transform: translateX(-50%);
+    font-size: 10px;
+    letter-spacing: 0.16em;
+    color: var(--sys);
+    white-space:nowrap;
+    transition: left 1s cubic-bezier(.2,.9,.3,1);
+  }
+
+  .scn-progress{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    gap: 14px;
+    flex-wrap:wrap;
+    margin-top: 18px;
+    padding-top: 16px;
+    border-top: 1px solid var(--sys-faint);
+  }
+  .scn-progress .big{
+    font-family:'Cinzel', serif;
+    font-size: 30px;
     font-weight:700;
-    color: var(--plum-soft);
-    text-transform: uppercase;
-    padding-bottom: 4px;
+    color: var(--gold);
+  }
+  .scn-progress .small{ font-size: 13px; color: var(--muted); }
+  .scn-progress .right{ text-align:right; font-size: 13px; color: var(--muted); max-width: 280px; }
+  .scn-cleared .scn-name{ color: var(--jade); text-shadow: 0 0 24px rgba(104,224,172,0.35); }
+
+  .chapter-strip{
+    display:flex;
+    gap: 4px;
+    margin-top: 14px;
+    flex-wrap:wrap;
+  }
+  .chapter-pip{
+    flex:1;
+    min-width: 12px;
+    height: 4px;
+    background: rgba(140,149,196,0.22);
+  }
+  .chapter-pip.done{ background: var(--jade); }
+  .chapter-pip.now{ background: var(--gold); box-shadow: 0 0 10px rgba(242,193,78,0.8); }
+
+  /* ---------- stat strip ---------- */
+  .stats{
+    display:grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  @media (min-width: 720px){
+    .stats{ grid-template-columns: repeat(4, 1fr); }
+  }
+  .stat{
+    background: var(--panel);
+    border: 1px solid var(--sys-faint);
+    border-radius: var(--radius);
+    padding: 14px 14px 15px;
+    text-align:center;
+  }
+  .stat .s-label{
+    font-size: 10.5px;
+    letter-spacing: 0.18em;
+    color: var(--muted);
+  }
+  .stat .s-value{
+    font-family:'Cinzel', serif;
+    font-size: 25px;
+    font-weight:700;
+    margin-top: 4px;
+    letter-spacing: 0.02em;
+  }
+  .stat.coins .s-value{ color: var(--coin); }
+  .stat.streak .s-value{ color: var(--scarlet); }
+  .stat.alert .s-value{ color: var(--scarlet); }
+  .stat .s-note{ font-size: 11px; color: var(--muted); margin-top: 3px; }
+
+  /* ---------- sub-scenario columns ---------- */
+  .columns{
+    display:grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  @media (min-width: 760px){
+    .columns{ grid-template-columns: 1fr 1fr; }
+  }
+  .col{
+    background: rgba(9,11,24,0.6);
+    border: 1px solid var(--sys-faint);
+    border-radius: var(--radius);
+    padding: 14px 12px 16px;
+    min-height: 180px;
+    transition: border-color 0.2s ease, background 0.2s ease;
+  }
+  .col.dragover{
+    border-color: var(--sys);
+    background: rgba(127,230,245,0.07);
+  }
+  .col-head{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    gap:8px;
+    padding: 0 4px 10px;
+    border-bottom: 1px solid var(--sys-faint);
+    margin-bottom: 12px;
+  }
+  .col-head h3{
+    font-family:'Cinzel', serif;
+    font-size: 13.5px;
+    font-weight:600;
+    letter-spacing: 0.08em;
+    margin:0;
+  }
+  .col-count{ font-size: 11.5px; color: var(--muted); letter-spacing:0.1em; }
+  .col.available .col-head h3{ color: var(--jade); }
+  .col.planned .col-head h3{ color: var(--violet); }
+
+  .sub{
+    border: 1px solid var(--sys-dim);
+    background: linear-gradient(180deg, rgba(20,24,48,0.9), rgba(12,14,30,0.9));
+    border-radius: var(--radius);
+    padding: 11px 12px 11px;
+    margin-bottom: 9px;
+    cursor: grab;
+    transition: border-color 0.25s ease, box-shadow 0.25s ease, opacity 0.2s ease;
+  }
+  .sub:active{ cursor: grabbing; }
+  .sub.dragging{ opacity: 0.35; }
+  .sub.running{
+    border-color: var(--jade);
+    box-shadow: 0 0 0 1px rgba(104,224,172,0.35), 0 0 22px rgba(104,224,172,0.18);
+  }
+  .sub-top{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap: 9px;
+    margin-bottom: 9px;
+  }
+  .sub-no{
+    font-family:'Cinzel', serif;
+    font-size: 11px;
+    color: var(--gold);
+    letter-spacing: 0.08em;
+    display:block;
+    margin-bottom: 2px;
+  }
+  .sub-title{
+    font-size: 14.5px;
+    font-weight:600;
+    line-height:1.3;
+    word-break: break-word;
+  }
+  .sub-time{
+    font-family:'Cinzel', serif;
+    font-size: 17px;
+    font-weight:600;
+    color: var(--muted);
+    white-space:nowrap;
+    font-variant-numeric: tabular-nums;
+  }
+  .sub.running .sub-time{ color: var(--jade); }
+  .sub-actions{ display:flex; gap: 6px; flex-wrap:wrap; }
+  .sbtn{
+    font-family:'Chakra Petch', sans-serif;
+    font-weight:600;
+    font-size: 12px;
+    letter-spacing: 0.06em;
+    padding: 6px 11px;
+    border-radius: var(--radius);
+    border: 1px solid var(--sys-dim);
+    background: rgba(127,230,245,0.06);
+    color: var(--sys);
+    cursor:pointer;
+    transition: background 0.18s ease, border-color 0.18s ease, transform 0.12s ease;
+  }
+  .sbtn:hover{ background: rgba(127,230,245,0.16); }
+  .sbtn:active{ transform: translateY(1px); }
+  .sbtn.start{ border-color: rgba(104,224,172,0.5); color: var(--jade); background: rgba(104,224,172,0.07); }
+  .sbtn.pause{ border-color: var(--gold-dim); color: var(--gold); background: rgba(242,193,78,0.07); }
+  .sbtn.clear{ border-color: rgba(242,193,78,0.6); color:#12131F; background: linear-gradient(135deg, var(--gold), #E0A93A); font-weight:700; }
+  .sbtn.ghost{ border-color: transparent; color: var(--muted); background: transparent; }
+  .sbtn.ghost:hover{ color: var(--scarlet); background: rgba(255,92,110,0.08); }
+
+  .col-empty{
+    text-align:center;
+    padding: 26px 12px;
+    color: var(--muted);
+    font-size: 12.5px;
+    line-height:1.7;
+    border: 1px dashed var(--sys-faint);
+    border-radius: var(--radius);
+  }
+
+  .new-sub{
+    display:flex;
+    gap: 9px;
+    margin-bottom: 16px;
+    flex-wrap:wrap;
+  }
+  .new-sub input{
+    flex:1;
+    min-width: 180px;
+    font-family:'Chakra Petch', sans-serif;
+    font-size: 14.5px;
+    color: var(--ink);
+    border: 1px solid var(--sys-dim);
+    background: rgba(9,11,24,0.8);
+    border-radius: var(--radius);
+    padding: 11px 13px;
+    outline:none;
+  }
+  .new-sub input::placeholder{ color: rgba(140,149,196,0.7); }
+  .new-sub input:focus{ border-color: var(--sys); box-shadow: 0 0 0 1px rgba(127,230,245,0.25); }
+  .primary-btn{
+    font-family:'Chakra Petch', sans-serif;
+    font-weight:700;
+    font-size: 13px;
+    letter-spacing: 0.1em;
+    padding: 11px 20px;
+    border-radius: var(--radius);
+    border: 1px solid var(--sys);
+    background: rgba(127,230,245,0.12);
+    color: var(--sys);
+    cursor:pointer;
+    white-space:nowrap;
+    transition: background 0.18s ease, transform 0.12s ease;
+  }
+  .primary-btn:hover{ background: rgba(127,230,245,0.24); }
+  .primary-btn:active{ transform: translateY(1px); }
+
+  .cleared-head{
+    margin: 20px 0 10px;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    color: var(--muted);
+  }
+  .cleared-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap: 10px;
+    padding: 8px 12px;
+    border-left: 2px solid var(--jade);
+    background: rgba(104,224,172,0.06);
+    margin-bottom: 6px;
+    font-size: 13.5px;
+  }
+  .cleared-row .ct{ color: var(--jade); font-weight:600; white-space:nowrap; }
+  .cleared-row.settled{ border-left-color: var(--gold); background: rgba(242,193,78,0.07); }
+  .cleared-row.settled .ct{ color: var(--gold); }
+
+  .episode-bar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap: 14px;
+    flex-wrap:wrap;
+    margin-top: 14px;
+    padding: 14px 16px;
+    border: 1px solid var(--gold-dim);
+    background: linear-gradient(120deg, rgba(242,193,78,0.10), transparent 70%);
+    border-radius: var(--radius);
+  }
+  .episode-bar .ep-note{ font-size: 12.5px; color: var(--muted); line-height:1.5; max-width: 420px; }
+  .episode-btn{
+    font-family:'Chakra Petch', sans-serif;
+    font-weight:700; font-size: 13px; letter-spacing: 0.12em;
+    padding: 12px 22px;
+    border-radius: var(--radius);
+    border: 1px solid rgba(242,193,78,0.7);
+    background: linear-gradient(135deg, var(--gold), #DFA637);
+    color: #12131F;
+    cursor:pointer;
+    white-space:nowrap;
+    transition: transform 0.12s ease, box-shadow 0.2s ease;
+  }
+  .episode-btn:hover{ box-shadow: 0 0 22px rgba(242,193,78,0.4); }
+  .episode-btn:active{ transform: translateY(1px); }
+
+  .price-edit{
+    font-family:'Chakra Petch', sans-serif;
+    font-size: 13px;
+    width: 92px;
+    color: var(--ink);
+    border: 1px solid var(--sys);
+    background: rgba(9,11,24,0.9);
+    padding: 5px 8px;
+    border-radius: var(--radius);
+    outline:none;
+  }
+
+  /* ---------- dokkaebi bag ---------- */
+  .bag-grid{
+    display:grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  @media (min-width: 760px){
+    .bag-grid{ grid-template-columns: 1.15fr 0.85fr; }
+  }
+  .purse{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap: 12px;
+    flex-wrap:wrap;
+    border: 1px solid var(--gold-dim);
+    background: linear-gradient(135deg, rgba(242,193,78,0.10), transparent);
+    border-radius: var(--radius);
+    padding: 12px 16px;
+    margin-bottom: 16px;
+  }
+  .purse .amount{
+    font-family:'Cinzel', serif;
+    font-size: 27px;
+    font-weight:700;
+    color: var(--coin);
+  }
+  .purse .lbl{ font-size: 11px; letter-spacing: 0.2em; color: var(--muted); }
+  .purse .side{ text-align:right; font-size: 12px; color: var(--muted); line-height:1.7; }
+
+  .item{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap: 10px;
+    border: 1px solid var(--sys-faint);
+    background: rgba(9,11,24,0.6);
+    border-radius: var(--radius);
+    padding: 10px 12px;
+    margin-bottom: 8px;
+  }
+  .item-name{ font-size: 14px; font-weight:600; word-break:break-word; }
+  .item-price{ font-size: 12px; color: var(--coin); letter-spacing:0.05em; }
+  .item-actions{ display:flex; gap:6px; align-items:center; }
+  .item.affordable{ border-color: rgba(242,193,78,0.4); }
+  .owned-row{
+    display:flex;
+    justify-content:space-between;
+    gap: 10px;
+    font-size: 12.5px;
+    color: var(--muted);
+    padding: 6px 10px;
+    border-left: 2px solid var(--violet);
+    background: rgba(169,139,255,0.06);
+    margin-bottom: 5px;
+  }
+  .owned-row b{ color: var(--ink); font-weight:600; }
+
+  /* ---------- titles ---------- */
+  .title-grid{
+    display:grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 10px;
+  }
+  .title-card{
+    border: 1px solid var(--sys-faint);
+    border-radius: var(--radius);
+    padding: 12px 11px;
+    background: rgba(9,11,24,0.5);
+    opacity: 0.45;
+    transition: all 0.3s ease;
+  }
+  .title-card.earned{
+    opacity:1;
+    border-color: var(--gold-dim);
+    background: linear-gradient(150deg, rgba(242,193,78,0.10), rgba(169,139,255,0.06));
+  }
+  .title-card .t-name{
+    font-family:'Cinzel', serif;
+    font-size: 13px;
+    font-weight:600;
+    color: var(--gold);
+    line-height:1.25;
+  }
+  .title-card.earned .t-name{ text-shadow: 0 0 14px rgba(242,193,78,0.4); }
+  .title-card .t-desc{ font-size: 11px; color: var(--muted); margin-top: 5px; line-height:1.4; }
+
+  /* ---------- ledger ---------- */
+  .ledger-bar{
+    display:flex;
+    height: 16px;
+    border: 1px solid var(--sys-faint);
+    background: rgba(9,11,24,0.7);
+    overflow:hidden;
+    margin: 6px 0 12px;
+  }
+  .ledger-seg{ height:100%; transition: width 0.6s ease; }
+  .ledger-legend{
+    display:flex;
+    flex-wrap:wrap;
+    gap: 6px 14px;
+    font-size: 11.5px;
+    color: var(--muted);
+  }
+  .ledger-legend span{ display:inline-flex; align-items:center; gap:6px; }
+  .swatch{ width:9px; height:9px; display:inline-block; }
+  .ledger-total{
+    display:flex; justify-content:space-between; align-items:baseline; gap:10px; flex-wrap:wrap;
+    font-size: 13px; color: var(--muted);
+  }
+  .ledger-total b{ font-family:'Cinzel',serif; font-size: 19px; color: var(--ink); font-weight:700; }
+  .ledger-total .over{ color: var(--scarlet); }
+  .ledger-total .safe{ color: var(--jade); }
+
+  /* ---------- calendar ---------- */
+  .cal-grid{ display:grid; grid-template-columns: repeat(7, 1fr); gap: 5px; }
+  .cal-dow{
+    text-align:center; font-size: 10.5px; letter-spacing:0.12em;
+    color: var(--muted); padding-bottom: 4px;
   }
   .cal-cell{
     position:relative;
     aspect-ratio: 1/1;
-    border-radius: 10px;
-    background: var(--lavender);
-    display:flex;
-    align-items:flex-start;
-    justify-content:flex-start;
-    padding: 4px 6px;
-    font-size: clamp(10px, 2.6vw, 12px);
-    font-weight:600;
-    color: var(--plum-soft);
+    border: 1px solid var(--sys-faint);
+    background: rgba(9,11,24,0.5);
+    display:flex; align-items:flex-start; justify-content:flex-start;
+    padding: 3px 5px;
+    font-size: clamp(9.5px, 2.4vw, 11.5px);
+    color: var(--muted);
   }
-  .cal-cell.empty{
-    background: transparent;
-  }
-  .cal-cell.logged{
-    color: #1f4a3d;
-    cursor: pointer;
-    font-weight:700;
-  }
-  .cal-cell.today{
-    outline: 2px solid var(--dandelion-deep);
-    outline-offset: -2px;
-  }
+  .cal-cell.empty{ background:transparent; border-color:transparent; }
+  .cal-cell.logged{ cursor:pointer; font-weight:700; }
+  .cal-cell.today{ border-color: var(--gold); box-shadow: inset 0 0 10px rgba(242,193,78,0.25); }
   .tooltip{
-    position: fixed;
-    z-index: 999;
-    background: var(--plum);
-    color: #fff;
+    position: fixed; z-index: 999;
+    background: var(--panel-solid);
+    border: 1px solid var(--sys-dim);
+    color: var(--ink);
     padding: 10px 13px;
-    border-radius: 12px;
-    font-size: 13px;
-    font-weight:600;
-    max-width: 220px;
-    box-shadow: 0 10px 22px rgba(0,0,0,0.25);
+    font-size: 12.5px;
+    max-width: 240px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.6);
     pointer-events:none;
-    opacity:0;
-    transform: translateY(4px);
+    opacity:0; transform: translateY(4px);
     transition: opacity 0.15s ease, transform 0.15s ease;
   }
   .tooltip.show{ opacity:1; transform: translateY(0); }
-  .tooltip .tt-hours{ color: var(--dandelion); margin-bottom:3px; }
-  .tooltip .tt-desc{ font-weight:500; color:#EDE7F5; }
+  .tooltip .tt-hours{ color: var(--gold); margin-bottom:3px; letter-spacing:0.08em; }
+  .tooltip .tt-desc{ color: var(--muted); line-height:1.5; }
 
-  /* ARCHIVE BUTTON */
-  .archive-link-wrap{
-    display:flex;
-    justify-content:center;
-    margin-bottom: 10px;
-  }
+  /* ---------- footer bits ---------- */
+  .archive-link-wrap{ display:flex; justify-content:center; gap: 12px; flex-wrap:wrap; margin-bottom: 14px; }
   .archive-btn{
-    font-family:'Quicksand', sans-serif;
-    font-weight:700;
-    font-size: 15px;
-    color: var(--plum);
-    background: var(--lavender);
-    border: 2px solid var(--lavender-line);
-    padding: 13px 30px;
-    border-radius: 999px;
+    font-family:'Chakra Petch', sans-serif;
+    font-weight:600; font-size: 13px; letter-spacing: 0.14em;
+    color: var(--sys);
+    border: 1px solid var(--sys-dim);
+    background: rgba(127,230,245,0.06);
+    padding: 12px 28px;
+    border-radius: var(--radius);
     text-decoration:none;
-    display:inline-flex;
-    align-items:center;
-    gap:8px;
-    transition: transform 0.2s ease, background 0.2s ease;
+    transition: background 0.2s ease;
   }
-  .archive-btn:hover{
-    background: #E5DBFB;
-    transform: translateY(-2px);
-  }
-
-  /* SYNC STATUS */
-  .sync-wrap{
-    text-align:center;
-    margin-bottom: 22px;
-  }
+  .archive-btn:hover{ background: rgba(127,230,245,0.16); }
+  .sync-wrap{ text-align:center; margin-bottom: 18px; }
   .sync-badge{
-    display:inline-block;
-    font-size: 11.5px;
-    font-weight:700;
-    color: var(--plum-soft);
-    background: var(--lavender);
-    border: 1px solid var(--lavender-line);
-    padding: 5px 14px;
-    border-radius: 999px;
-    margin-bottom: 10px;
+    display:inline-block; font-size: 11px; letter-spacing: 0.12em;
+    color: var(--muted); border: 1px solid var(--sys-faint);
+    padding: 5px 14px; border-radius: var(--radius);
   }
-  .sync-hint{
-    max-width: 360px;
-    margin: 8px auto 0;
-    font-size: 11.5px;
-    color: var(--plum-soft);
-    font-weight:600;
-    line-height:1.4;
-  }
+  .sync-hint{ max-width: 380px; margin: 8px auto 0; font-size: 11px; color: var(--muted); line-height:1.5; }
+  footer.note{ text-align:center; font-size: 11.5px; color: var(--muted); letter-spacing:0.08em; }
 
-  /* LOCK SCREEN */
-  body.app-locked > *:not(.lock-overlay){
-    filter: blur(14px);
-    pointer-events: none;
-    user-select: none;
-  }
+  /* ---------- lock ---------- */
+  body.app-locked > *:not(.lock-overlay){ filter: blur(14px); pointer-events:none; user-select:none; }
   .lock-overlay{
-    position:fixed;
-    inset:0;
-    z-index: 99999;
-    display:none;
-    align-items:center;
-    justify-content:center;
-    padding: 20px;
-    background:
-      radial-gradient(circle at 8% 10%, #FFF1DA 0%, transparent 40%),
-      radial-gradient(circle at 92% 6%, #E7F7F1 0%, transparent 38%),
-      radial-gradient(circle at 85% 92%, #F5E9FF 0%, transparent 42%),
-      var(--cream);
+    position:fixed; inset:0; z-index:99999; display:none;
+    align-items:center; justify-content:center; padding:20px;
+    background: radial-gradient(circle at 50% 40%, rgba(127,230,245,0.10), transparent 60%), var(--void);
   }
   .lock-overlay.show{ display:flex; }
   .lock-card{
-    background: var(--panel);
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow);
-    padding: 34px 28px;
-    text-align:center;
-    width: 100%;
-    max-width: 300px;
+    background: var(--panel); border: 1px solid var(--sys-dim);
+    padding: 34px 28px; text-align:center; width:100%; max-width: 320px;
+    position:relative;
   }
-  .lock-emoji{ font-size: 34px; margin-bottom: 8px; }
-  .lock-card h2{
-    font-family:'Baloo 2', sans-serif;
-    font-size: 20px;
-    margin: 0 0 18px;
-  }
+  .lock-card .eyebrow{ font-size: 10.5px; letter-spacing: 0.28em; color: var(--sys); }
+  .lock-card h2{ font-family:'Cinzel',serif; font-size: 19px; margin: 10px 0 18px; font-weight:600; }
   .lock-input{
-    width:100%;
-    text-align:center;
-    letter-spacing: 10px;
-    font-size: 22px;
-    font-family:'Quicksand', sans-serif;
-    font-weight:700;
-    padding: 12px 10px;
-    border-radius: 14px;
-    border: 2px solid var(--lavender-line);
-    background: var(--lavender);
-    color: var(--plum);
-    outline:none;
+    width:100%; text-align:center; letter-spacing: 10px;
+    font-size: 21px; font-family:'Chakra Petch', sans-serif; font-weight:700;
+    padding: 11px 10px; border: 1px solid var(--sys-dim);
+    background: rgba(9,11,24,0.8); color: var(--ink); outline:none;
   }
-  .lock-input:focus{ border-color: var(--dandelion-deep); }
+  .lock-input:focus{ border-color: var(--sys); }
   .lock-input.shake{ animation: lock-shake 0.4s ease; }
-  @keyframes lock-shake{
-    0%,100%{ transform: translateX(0); }
-    25%{ transform: translateX(-8px); }
-    75%{ transform: translateX(8px); }
-  }
-  .lock-error{
-    min-height: 18px;
-    font-size: 12.5px;
-    font-weight:700;
-    color: var(--coral, #FF7A70);
-    margin-top: 8px;
-  }
-  .lock-btn{
-    width:100%;
-    margin-top: 12px;
-    font-family:'Quicksand', sans-serif;
-    font-weight:700;
-    font-size: 14.5px;
-    padding: 12px 14px;
-    border-radius: 999px;
-    border:none;
-    cursor:pointer;
-    background: linear-gradient(135deg, var(--dandelion), var(--dandelion-deep));
-    color: #4A3510;
-    transition: transform 0.15s ease;
-  }
-  .lock-btn:hover{ transform: translateY(-1px); }
+  @keyframes lock-shake{ 0%,100%{transform:translateX(0);} 25%{transform:translateX(-8px);} 75%{transform:translateX(8px);} }
+  .lock-error{ min-height: 18px; font-size: 12px; color: var(--scarlet); margin-top: 8px; }
 
-  /* MODAL */
+  .lock-field{ text-align:left; margin-bottom: 12px; }
+  .lock-field label{
+    display:block;
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    color: var(--muted);
+    margin-bottom: 5px;
+  }
+  .lock-input.text{
+    letter-spacing: normal;
+    text-align:left;
+    font-size: 14.5px;
+  }
+  .lock-btn-real[disabled]{ opacity:0.55; cursor:not-allowed; }
+
+  /* ---------- modals ---------- */
   .modal-overlay{
-    position:fixed;
-    inset:0;
-    background: rgba(74,63,85,0.35);
-    backdrop-filter: blur(2px);
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    padding: 20px;
-    z-index: 1000;
-    opacity:0;
-    pointer-events:none;
-    transition: opacity 0.2s ease;
+    position:fixed; inset:0; background: rgba(4,4,12,0.7);
+    backdrop-filter: blur(3px);
+    display:flex; align-items:center; justify-content:center; padding: 20px;
+    z-index: 1000; opacity:0; pointer-events:none; transition: opacity 0.2s ease;
   }
-  .modal-overlay.open{
-    opacity:1;
-    pointer-events:auto;
-  }
+  .modal-overlay.open{ opacity:1; pointer-events:auto; }
   .modal{
-    background: var(--panel);
-    border-radius: var(--radius-lg);
-    padding: 26px 24px 22px;
-    width: 100%;
-    max-width: 360px;
-    box-shadow: 0 20px 50px rgba(0,0,0,0.25);
-    transform: scale(0.94) translateY(10px);
+    position:relative;
+    background: var(--panel-solid);
+    border: 1px solid var(--sys-dim);
+    padding: 24px 22px 20px;
+    width:100%; max-width: 380px;
+    transform: scale(0.95) translateY(10px);
     transition: transform 0.25s ease;
   }
-  .modal-overlay.open .modal{
-    transform: scale(1) translateY(0);
-  }
+  .modal-overlay.open .modal{ transform: scale(1) translateY(0); }
   .modal h3{
-    font-family:'Baloo 2', sans-serif;
-    margin: 0 0 18px;
-    font-size: 21px;
-    text-align:center;
+    font-family:'Cinzel',serif; font-size: 17px; font-weight:600;
+    margin: 0 0 4px; color: var(--sys); letter-spacing:0.04em;
   }
-  .field{
-    margin-bottom: 14px;
-    display:flex;
-    flex-direction:column;
-    gap:5px;
+  .modal .modal-sub{ font-size: 13px; color: var(--gold); margin-bottom: 16px; word-break:break-word; }
+  .field{ margin-bottom: 13px; display:flex; flex-direction:column; gap:5px; }
+  .field-row{ display:flex; gap:10px; }
+  .field-row .field{ flex:1; }
+  .field label{ font-size: 10.5px; letter-spacing: 0.16em; color: var(--muted); }
+  .field input, .field select{
+    font-family:'Chakra Petch', sans-serif; font-size: 14.5px;
+    color: var(--ink); border: 1px solid var(--sys-dim);
+    background: rgba(9,11,24,0.8); padding: 10px 12px; outline:none; width:100%;
+    border-radius: var(--radius);
   }
-  .field label{
-    font-size: 12.5px;
-    font-weight:700;
-    color: var(--plum-soft);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+  .field input:focus, .field select:focus{ border-color: var(--sys); }
+  .field select option{ background: var(--panel-solid); color: var(--ink); }
+  .quick-times{ display:flex; gap:6px; flex-wrap:wrap; margin-bottom: 13px; }
+  .quick-time{
+    font-family:'Chakra Petch',sans-serif; font-size: 11.5px; letter-spacing:0.06em;
+    padding: 6px 12px; border: 1px solid var(--sys-dim);
+    background: transparent; color: var(--sys); cursor:pointer; border-radius: var(--radius);
   }
-  .field input, .field textarea, .field select{
-    font-family:'Quicksand', sans-serif;
-    font-size: 15px;
-    font-weight:600;
-    color: var(--plum);
-    border: 2px solid var(--lavender-line);
-    background: var(--lavender);
-    border-radius: 12px;
-    padding: 10px 12px;
-    outline:none;
-    transition: border-color 0.2s ease;
-  }
-  .field input:focus, .field textarea:focus, .field select:focus{
-    border-color: var(--dandelion-deep);
-  }
-  .field textarea{ resize: vertical; min-height: 60px; font-family:'Quicksand', sans-serif; }
-  .modal-actions{
-    display:flex;
-    gap:10px;
-    margin-top: 18px;
-  }
+  .quick-time:hover{ background: rgba(127,230,245,0.14); }
+  .modal-actions{ display:flex; gap:10px; margin-top: 16px; }
   .btn{
-    flex:1;
-    font-family:'Quicksand', sans-serif;
-    font-weight:700;
-    font-size: 14.5px;
-    padding: 12px 14px;
-    border-radius: 999px;
-    border:none;
-    cursor:pointer;
-    transition: transform 0.15s ease, opacity 0.15s ease;
+    flex:1; font-family:'Chakra Petch',sans-serif; font-weight:700;
+    font-size: 13px; letter-spacing: 0.1em; padding: 11px 14px;
+    border-radius: var(--radius); border:1px solid transparent; cursor:pointer;
+    transition: transform 0.12s ease, background 0.2s ease;
   }
-  .btn:hover{ transform: translateY(-1px); }
-  .btn-cancel{
-    background: var(--lavender);
-    color: var(--plum);
+  .btn:active{ transform: translateY(1px); }
+  .btn-cancel{ background: transparent; border-color: var(--sys-faint); color: var(--muted); }
+  .btn-save{ background: linear-gradient(135deg, var(--gold), #DFA637); color:#12131F; }
+
+  /* ---------- message windows ---------- */
+  .toast-stack{
+    position:fixed; left:50%; bottom: 22px; transform: translateX(-50%);
+    z-index: 10000; display:flex; flex-direction:column; align-items:center; gap: 8px;
+    pointer-events:none; width: calc(100% - 28px); max-width: 460px;
   }
-  .btn-save{
-    background: linear-gradient(135deg, var(--dandelion), var(--dandelion-deep));
-    color: #4A3510;
+  .toast{
+    background: rgba(10,14,30,0.94);
+    border: 1px solid var(--sys-dim);
+    color: var(--sys);
+    padding: 11px 16px;
+    font-size: 13.5px; text-align:center; line-height:1.45;
+    box-shadow: 0 0 26px rgba(127,230,245,0.18);
+    animation: toast-in 240ms cubic-bezier(.2,.9,.3,1);
+    max-width:100%;
+  }
+  .toast.gold{ border-color: var(--gold-dim); color: var(--gold); box-shadow: 0 0 26px rgba(242,193,78,0.22); }
+  .toast.coin{ border-color: rgba(255,216,107,0.5); color: var(--coin); }
+  .toast.out{ animation: toast-out 280ms ease forwards; }
+  @keyframes toast-in{ from{ transform: translateY(16px); opacity:0; } to{ transform:none; opacity:1; } }
+  @keyframes toast-out{ to{ transform: translateY(10px); opacity:0; } }
+
+  .float-gain{
+    position:fixed; z-index:9998; pointer-events:none;
+    font-family:'Cinzel',serif; font-weight:700; font-size: 24px;
+    color: var(--coin); text-shadow: 0 0 18px rgba(255,216,107,0.8);
+    animation: float-up 1500ms ease-out forwards;
+  }
+  @keyframes float-up{
+    0%{ transform: translate(-50%,0) scale(0.85); opacity:0; }
+    18%{ transform: translate(-50%,-12px) scale(1.1); opacity:1; }
+    100%{ transform: translate(-50%,-92px) scale(1); opacity:0; }
   }
 
-  footer.note{
-    text-align:center;
-    font-size: 12px;
-    color: var(--plum-soft);
-    margin-top: 18px;
+  .levelup{
+    position:fixed; inset:0; z-index:10001; display:none;
+    align-items:center; justify-content:center; padding:20px;
+    background: rgba(4,4,12,0.78); backdrop-filter: blur(4px);
+  }
+  .levelup.show{ display:flex; animation: toast-in 300ms ease; }
+  .levelup-card{
+    background: var(--panel-solid); border: 1px solid var(--gold-dim);
+    padding: 32px 28px 26px; text-align:center; max-width: 360px; width:100%;
+    box-shadow: 0 0 60px rgba(242,193,78,0.25);
+    position:relative;
+  }
+  .levelup-card .lu-glyph{ font-size: 40px; }
+  .levelup-card h3{ font-family:'Cinzel',serif; font-size: 23px; margin: 10px 0 2px; color: var(--gold); }
+  .levelup-card .lu-title{ font-size: 15px; color: var(--sys); margin-bottom: 14px; letter-spacing:0.08em; }
+  .levelup-card p{ font-size: 13px; color: var(--muted); margin: 0 0 20px; line-height:1.6; }
+
+  .confetti-layer{ position:fixed; inset:0; pointer-events:none; overflow:hidden; z-index:9999; }
+  .confetti-piece{
+    position:fixed; top:0; left:0; width:8px; height:8px;
+    margin:-4px 0 0 -4px; opacity:1;
+    animation: confetti-burst 1400ms cubic-bezier(0.15,0.8,0.3,1) forwards;
+  }
+  @keyframes confetti-burst{
+    0%{ transform: translate(0,0) rotate(0deg) scale(1); opacity:1; }
+    70%{ opacity:1; }
+    100%{ transform: translate(var(--tx), var(--ty)) rotate(var(--rot)) scale(0.4); opacity:0; }
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *{ animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.05s !important; }
   }
 </style>
 </head>
 <body>
 
+<div class="sky" id="sky" aria-hidden="true"></div>
+
 <div class="lock-overlay" id="lockOverlay">
   <div class="lock-card">
-    <div class="lock-emoji">🔒</div>
-    <h2>Enter Code</h2>
+    <div class="eyebrow">STAR STREAM</div>
+    <h2>Authentication</h2>
     <form id="lockForm" autocomplete="off">
-      <input type="password" id="lockInput" class="lock-input" inputmode="numeric" pattern="[0-9]*" maxlength="5" autocomplete="off" placeholder="•••••" required>
+      <div class="lock-field">
+        <label for="lockEmail">EMAIL</label>
+        <input type="email" id="lockEmail" class="lock-input text" autocomplete="username" placeholder="you@example.com" required>
+      </div>
+      <div class="lock-field" style="margin-bottom:4px;">
+        <label for="lockPassword">PASSWORD</label>
+        <input type="password" id="lockPassword" class="lock-input text" autocomplete="current-password" placeholder="••••••••" required>
+      </div>
       <div class="lock-error" id="lockError"></div>
-      <button type="submit" class="lock-btn">Unlock</button>
+      <button type="submit" id="lockSubmitBtn" class="btn btn-save" style="width:100%;margin-top:6px;">ENTER</button>
     </form>
   </div>
 </div>
 
+<button class="sound-toggle" id="soundToggle" title="Sound on/off" aria-label="Sound on or off">◈</button>
+
 <div class="wrap">
   <header class="top">
-    <span class="blob-icon">🌼</span>
-    <h1>Hours Tracker</h1>
+    <div class="eyebrow">WAYS OF SURVIVAL</div>
+    <h1>Scenario Tracker</h1>
+    <div class="reader" id="readerLine">Incarnation: Kim Dokja · Destination: the final chapter</div>
   </header>
-  <div class="month-label" id="monthLabel">August 2026</div>
+  <div class="month-label" id="monthLabel">AUGUST 2026</div>
 
-  <div class="hero" id="heroSection">
-    <div class="circle-holder" id="circleHolder">
-      <svg class="budget-ring-svg" id="budgetRingSvg" viewBox="0 0 200 200">
-        <circle class="budget-ring-track" cx="100" cy="100" r="97"></circle>
-      </svg>
-      <svg class="ring-svg" viewBox="0 0 200 200">
-        <circle class="ring-track" cx="100" cy="100" r="92"></circle>
-        <circle class="ring-progress" id="ringProgress" cx="100" cy="100" r="92"></circle>
-      </svg>
-      <div class="circle-fill" id="circleFill">
-        <div class="circle-number" id="circleNumber">90</div>
-        <div class="circle-caption" id="circleCaption">hours left this month</div>
+  <div class="win">
+    <div class="member-row">
+      <div class="member-left">
+        <span class="member-chip" id="memberChip">MEMBERSHIP LV 1</span>
+        <span class="member-title" id="memberTitle">Unregistered Bag</span>
+      </div>
+      <div class="member-xp" id="memberXp">0 / 500 BAG XP</div>
+    </div>
+    <div class="xp-track"><div class="xp-fill" id="xpFill"></div></div>
+    <div class="win-sub" style="margin:10px 0 0;">The bag grows on what you spend, not what you earn. Buy from it to raise your membership.</div>
+  </div>
+
+  <div class="win scenario-win" id="scenarioWin">
+    <div class="scn-head">
+      <div>
+        <div class="scn-tag" id="scnTag">MAIN SCENARIO #1</div>
+        <h2 class="scn-name" id="scnName">Prove Your Value</h2>
+      </div>
+      <div class="scn-meta">
+        Category: <b>Main</b><br>
+        Difficulty: <span class="diff" id="scnDiff">F</span><br>
+        Chapter <b id="scnChapter">1 / 12</b>
       </div>
     </div>
 
-    <div class="circle-holder overage-holder" id="overageHolder">
-      <svg class="budget-ring-svg" id="overageRingSvg" viewBox="0 0 200 200">
-        <circle class="budget-ring-track" cx="100" cy="100" r="97"></circle>
-      </svg>
-      <div class="circle-fill overage-fill" id="overageFill">
-        <div class="circle-number" id="overageNumber">0</div>
+    <div class="scn-conditions">
+      <span class="k">CLEAR CONDITION</span> — <span class="v" id="scnCondition">Accumulate 90 hours before the month ends.</span><br>
+      <span class="k">TIME LIMIT</span> — <span class="v" id="scnLimit">until the end of the month</span><br>
+      <span class="k">REWARD</span> — <span class="v" id="scnReward">Passage to the next main scenario.</span><br>
+      <span class="k">FAILURE</span> — <span class="fail">The scenario repeats. You do not advance.</span>
+    </div>
+
+    <div class="map">
+      <div class="map-rail" id="mapRail">
+        <div class="map-line"></div>
+        <div class="map-line-fill" id="mapFill" style="width:0%"></div>
+        <div class="avatar-name" id="avatarName" style="left:5%">KIM DOKJA</div>
+        <div class="avatar" id="avatar" style="left:5%">📖</div>
+      </div>
+    </div>
+
+    <div class="scn-progress">
+      <div>
+        <span class="big" id="hoursDone">0</span>
+        <span class="small"> / 90 hours this month</span>
+        <div class="small" id="progressLine">90 hours remain before the scenario fails.</div>
+      </div>
+      <div class="right" id="scnFlavor"></div>
+    </div>
+
+    <div class="chapter-strip" id="chapterStrip"></div>
+  </div>
+
+  <div class="stats">
+    <div class="stat coins">
+      <div class="s-label">COINS HELD</div>
+      <div class="s-value" id="coinValue">0</div>
+      <div class="s-note" id="coinNote">0 earned · 0 spent</div>
+    </div>
+    <div class="stat streak" id="streakStat">
+      <div class="s-label">WEEK STREAK</div>
+      <div class="s-value" id="streakValue">0</div>
+      <div class="s-note">weeks over 25h</div>
+    </div>
+    <div class="stat" id="weekStat">
+      <div class="s-label">THIS WEEK</div>
+      <div class="s-value" id="weekValue">0h</div>
+      <div class="s-note" id="weekNote">25h keeps the streak</div>
+    </div>
+    <div class="stat" id="avgStat">
+      <div class="s-label">AVG WEEKLY</div>
+      <div class="s-value" id="avgValue">0h</div>
+      <div class="s-note">across this year</div>
+    </div>
+  </div>
+
+  <div class="win" id="subBoard">
+    <h2 class="win-title">Sub-scenarios</h2>
+    <div class="win-sub" id="boardSub">Not numbered by the Star Stream — numbered by you. Drag between the two panels.</div>
+
+    <form class="new-sub" id="newSubForm" autocomplete="off">
+      <input type="text" id="subInput" placeholder="Name the sub-scenario…" maxlength="120" required>
+      <button type="submit" class="primary-btn">OPEN SCENARIO #<span id="nextNo">1</span></button>
+    </form>
+
+    <div class="columns">
+      <div class="col available" id="colAvailable" data-list="available">
+        <div class="col-head">
+          <h3>AVAILABLE</h3>
+          <span class="col-count" id="countAvailable">0</span>
+        </div>
+        <div class="col-body" id="listAvailable"></div>
+      </div>
+      <div class="col planned" id="colPlanned" data-list="planned">
+        <div class="col-head">
+          <h3>PLANNED</h3>
+          <span class="col-count" id="countPlanned">0</span>
+        </div>
+        <div class="col-body" id="listPlanned"></div>
+      </div>
+    </div>
+
+    <div id="clearedTodayWrap"></div>
+  </div>
+
+  <div class="win">
+    <h2 class="win-title">Dokkaebi Bag</h2>
+    <div class="win-sub">List what you want. Earn the coins. Take it out of the bag.</div>
+
+    <div class="purse">
+      <div>
+        <div class="lbl">COIN BALANCE</div>
+        <div class="amount" id="purseAmount">0 C</div>
+      </div>
+      <div class="side">
+        100 C per hour cleared · 25 C per sub-scenario<br>
+        Every coin spent becomes bag XP.
+      </div>
+    </div>
+
+    <div class="bag-grid">
+      <div>
+        <form class="new-sub" id="newItemForm" autocomplete="off">
+          <input type="text" id="itemName" placeholder="Item name…" maxlength="80" required>
+          <input type="number" id="itemPrice" placeholder="Price" min="1" step="1" required style="max-width:120px;min-width:100px;flex:0 0 auto;">
+          <button type="submit" class="primary-btn">LIST</button>
+        </form>
+        <div id="itemList"></div>
+      </div>
+      <div>
+        <div class="cleared-head" style="margin-top:0;">TAKEN FROM THE BAG</div>
+        <div id="ownedList"></div>
       </div>
     </div>
   </div>
 
-  <div class="widgets">
-    <div class="widget" id="weekWidget">
-      <div class="w-label">This Week</div>
-      <div class="w-value" id="weekValue">0h</div>
-    </div>
-    <div class="widget" id="avgWidget">
-      <div class="w-label">Avg Weekly (Year)</div>
-      <div class="w-value" id="avgValue">0h</div>
-    </div>
-    <div class="widget log-widget" id="logOpenBtn" aria-label="Log money" title="Log money">
-      <div class="w-plus">＋</div>
-    </div>
+  <div class="win">
+    <h2 class="win-title">Titles</h2>
+    <div class="win-sub" id="titleSub">0 of 12 acquired</div>
+    <div class="title-grid" id="titleGrid"></div>
   </div>
 
-  <div class="calendar-section">
-    <h2 id="calTitle">August 2026</h2>
+  <div class="win">
+    <h2 class="win-title">Sponsorship Ledger</h2>
+    <div class="win-sub">Real money, tracked against the $3,600 monthly line.</div>
+    <div class="ledger-total">
+      <span><b id="ledgerTotal">$0.00</b> of $3,600.00</span>
+      <span id="ledgerState"></span>
+    </div>
+    <div class="ledger-bar" id="ledgerBar"></div>
+    <div class="ledger-legend" id="ledgerLegend"></div>
+    <button class="primary-btn" id="logOpenBtn" style="margin-top:16px;">＋ RECORD SPENDING</button>
+  </div>
+
+  <div class="win">
+    <h2 class="win-title" id="calTitle">August 2026</h2>
+    <div class="win-sub">Days the scenario moved.</div>
     <div class="cal-grid" id="calGrid"></div>
   </div>
 
   <div class="archive-link-wrap">
-    <a href="archive.html" class="archive-btn">🗂️ Open Archive</a>
+    <a href="archive.html" class="archive-btn">OPEN ARCHIVE</a>
+    <button class="archive-btn" id="signOutBtn" style="border-color:rgba(255,92,110,0.4);color:var(--scarlet);background:rgba(255,92,110,0.06);cursor:pointer;">SIGN OUT</button>
   </div>
 
   <div class="sync-wrap">
-    <div class="sync-badge" id="syncBadge">💾 Saved on this device only</div>
+    <div class="sync-badge" id="syncBadge">SAVED ON THIS DEVICE ONLY</div>
     <div class="sync-hint" id="syncHint">Add a Firebase config in the code to sync across devices.</div>
   </div>
 
-  <footer class="note">Goal: 90 hours · resets automatically each month</footer>
+  <footer class="note">90 hours per main scenario · the month resets, the story does not</footer>
 </div>
 
 <div class="tooltip" id="tooltip">
@@ -672,26 +1164,46 @@
 </div>
 
 <div class="confetti-layer" id="confettiLayer"></div>
+<div class="toast-stack" id="toastStack"></div>
+
+<div class="levelup" id="levelUpOverlay">
+  <div class="levelup-card">
+    <div class="lu-glyph">✦</div>
+    <h3 id="luHeading">Membership Level 2</h3>
+    <div class="lu-title" id="luTitle">Trainee Subscriber</div>
+    <p id="luLine">The bag remembers what you spent.</p>
+    <button class="btn btn-save" id="luClose">CONFIRM</button>
+  </div>
+</div>
 
 <div class="modal-overlay" id="modalOverlay">
   <div class="modal">
-    <h3>Log Hours 📝</h3>
+    <h3 id="logHeading">Scenario cleared</h3>
+    <div class="modal-sub" id="logSubName"></div>
     <form id="logForm">
+      <div class="field-row">
+        <div class="field">
+          <label for="fHours">HOURS</label>
+          <input type="number" id="fHours" min="0" max="24" step="1" placeholder="0">
+        </div>
+        <div class="field">
+          <label for="fMinutes">MINUTES</label>
+          <input type="number" id="fMinutes" min="0" max="59" step="1" placeholder="0">
+        </div>
+      </div>
+      <div class="quick-times" id="quickTimes">
+        <button type="button" class="quick-time" data-mins="15">+15m</button>
+        <button type="button" class="quick-time" data-mins="30">+30m</button>
+        <button type="button" class="quick-time" data-mins="60">+1h</button>
+        <button type="button" class="quick-time" data-mins="120">+2h</button>
+      </div>
       <div class="field">
-        <label for="fDate">Date</label>
+        <label for="fDate">DATE</label>
         <input type="date" id="fDate" required>
       </div>
-      <div class="field">
-        <label for="fHours">Hours Worked</label>
-        <input type="number" id="fHours" min="0" step="0.25" placeholder="e.g. 3.5" required>
-      </div>
-      <div class="field">
-        <label for="fDesc">Task Description</label>
-        <textarea id="fDesc" placeholder="What did you work on?" required></textarea>
-      </div>
       <div class="modal-actions">
-        <button type="button" class="btn btn-cancel" id="cancelBtn">Cancel</button>
-        <button type="submit" class="btn btn-save">Save</button>
+        <button type="button" class="btn btn-cancel" id="cancelBtn">CANCEL</button>
+        <button type="submit" class="btn btn-save" id="logSaveBtn">CLAIM COINS</button>
       </div>
     </form>
   </div>
@@ -699,27 +1211,28 @@
 
 <div class="modal-overlay" id="budgetModalOverlay">
   <div class="modal">
-    <h3>Log Money</h3>
+    <h3>Record spending</h3>
+    <div class="modal-sub">Counts against the $3,600 monthly line.</div>
     <form id="budgetForm">
       <div class="field">
-        <label for="bAmount">Amount</label>
+        <label for="bAmount">AMOUNT</label>
         <input type="number" id="bAmount" step="0.01" placeholder="e.g. 45.50 or -20" required>
       </div>
       <div class="field">
-        <label for="bCategory">Category</label>
+        <label for="bCategory">CATEGORY</label>
         <select id="bCategory" required>
-          <option value="savings" style="color:#8B6FC9;">Savings</option>
-          <option value="loans" style="color:#3F76B8;">Loans</option>
-          <option value="groceries" style="color:#3E9265;">Groceries</option>
-          <option value="gas" style="color:#B8860B;">Gas</option>
-          <option value="food" style="color:#D9772E;">Food</option>
-          <option value="subscription" style="color:#000000;">Subscription</option>
-          <option value="other" style="color:#D14A3E;">Other</option>
+          <option value="savings">Savings</option>
+          <option value="loans">Loans</option>
+          <option value="groceries">Groceries</option>
+          <option value="gas">Gas</option>
+          <option value="food">Food</option>
+          <option value="subscription">Subscription</option>
+          <option value="other">Other</option>
         </select>
       </div>
       <div class="modal-actions">
-        <button type="button" class="btn btn-cancel" id="budgetCancelBtn">Cancel</button>
-        <button type="submit" class="btn btn-save">Add</button>
+        <button type="button" class="btn btn-cancel" id="budgetCancelBtn">CANCEL</button>
+        <button type="submit" class="btn btn-save">ADD</button>
       </div>
     </form>
   </div>
@@ -738,68 +1251,262 @@
     storageBucket: "beepaboop600.firebasestorage.app",
     messagingSenderId: "341983136727",
     appId: "1:341983136727:web:6364e709fe1737e3c75992"
-  
-};
-  // A "folder name" for your data in the shared database. Change this to
-  // any string only you know if you want a little extra obscurity.
+  };
   const SYNC_KEY = "my-hours-tracker";
   // ============================================================
+
+  // ============================================================
+  // Constellation sky — drawn once, deterministic so it never jitters.
+  // Shapes are normalised 0..1 inside their own box, then placed on the
+  // viewport. Every star that belongs to a constellation gets a line.
+  // ============================================================
+  const CONSTELLATION_SHAPES = [
+    { name:'THE DIPPER', pts:[[0,0.55],[0.2,0.38],[0.42,0.3],[0.62,0.42],[0.6,0.7],[0.38,0.82],[0.18,0.74],[0,0.55]], bright:[2] },
+    { name:'CASSIOPEIA', pts:[[0,0.2],[0.24,0.72],[0.5,0.22],[0.76,0.75],[1,0.28]], bright:[2] },
+    { name:'THE READER', pts:[[0.5,0],[0.22,0.26],[0.5,0.44],[0.78,0.26],[0.5,0.44],[0.5,0.82],[0.28,1],[0.5,0.82],[0.74,1]], bright:[0,5] },
+    { name:'LYRA', pts:[[0.1,0.08],[0.46,0.3],[0.28,0.62],[0.62,0.78],[0.9,0.5],[0.46,0.3]], bright:[0] },
+    { name:'THE WALL', pts:[[0,0.86],[0.16,0.4],[0.4,0.62],[0.58,0.14],[0.78,0.5],[1,0.2]], bright:[3] },
+    { name:'SCORPIUS', pts:[[0,0.12],[0.2,0.3],[0.42,0.4],[0.6,0.56],[0.72,0.8],[0.9,0.74],[0.94,0.5]], bright:[2] },
+    { name:'THE ARK', pts:[[0.05,0.3],[0.3,0.68],[0.62,0.74],[0.9,0.42],[0.62,0.74],[0.5,1]], bright:[3] },
+    { name:'ORION', pts:[[0.16,0.05],[0.82,0.12],[0.34,0.44],[0.5,0.5],[0.66,0.56],[0.2,0.92],[0.86,0.86],[0.66,0.56]], bright:[3] }
+  ];
+  // Fixed layout so the sky is the same every visit.
+  const CONSTELLATION_PLACEMENT = [
+    { x:0.05, y:0.04, w:0.22, h:0.16 },
+    { x:0.70, y:0.02, w:0.24, h:0.13 },
+    { x:0.38, y:0.16, w:0.20, h:0.24 },
+    { x:0.06, y:0.34, w:0.16, h:0.18 },
+    { x:0.76, y:0.32, w:0.20, h:0.20 },
+    { x:0.30, y:0.58, w:0.22, h:0.18 },
+    { x:0.04, y:0.68, w:0.20, h:0.18 },
+    { x:0.68, y:0.66, w:0.26, h:0.24 }
+  ];
+
+  function buildSky(){
+    const host = document.getElementById('sky');
+    if(!host) return;
+    const W = 1000, H = 1000; // viewBox units, stretched with preserveAspectRatio
+    let seed = 20260916;
+    const rnd = () => { seed = (seed * 1103515245 + 12345) % 2147483648; return seed / 2147483648; };
+
+    const parts = [];
+    // loose background stars
+    for(let i = 0; i < 220; i++){
+      const x = rnd() * W, y = rnd() * H;
+      const r = 0.6 + rnd() * 1.5;
+      const o = (0.25 + rnd() * 0.6).toFixed(2);
+      const tw = rnd() > 0.72;
+      parts.push(
+        `<circle class="star${tw ? ' twinkle' : ''}" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${r.toFixed(2)}" ` +
+        `style="--o:${o};opacity:${o};animation-delay:${(rnd()*4).toFixed(2)}s"/>`
+      );
+    }
+    // constellations
+    CONSTELLATION_SHAPES.forEach((shape, i) => {
+      const box = CONSTELLATION_PLACEMENT[i % CONSTELLATION_PLACEMENT.length];
+      const pts = shape.pts.map(([px, py]) => [
+        (box.x + px * box.w) * W,
+        (box.y + py * box.h) * H
+      ]);
+      const d = pts.map((p, k) => `${k ? 'L' : 'M'}${p[0].toFixed(1)},${p[1].toFixed(1)}`).join(' ');
+      parts.push(`<path class="c-line" d="${d}"/>`);
+      pts.forEach((p, k) => {
+        const bright = shape.bright.includes(k);
+        parts.push(`<circle class="c-star${bright ? ' bright' : ''}" cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="${bright ? 2.6 : 1.8}"/>`);
+      });
+      const lowest = pts.reduce((a, b) => (b[1] > a[1] ? b : a));
+      parts.push(`<text class="c-name" x="${lowest[0].toFixed(1)}" y="${(lowest[1] + 16).toFixed(1)}" text-anchor="middle">${shape.name}</text>`);
+    });
+
+    host.innerHTML =
+      `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">${parts.join('')}</svg>`;
+  }
+  buildSky();
 
   const STORAGE_KEY = 'hourTrackerEntries_v1';
   const BUDGET_KEY = 'hourTrackerBudget_v1';
   const BUDGET_ARCHIVE_KEY = 'hourTrackerBudgetArchive_v1';
-  const GOAL = 90;
-  const RING_R = 92;
-  const RING_CIRC = 2 * Math.PI * RING_R;
-  const BUDGET_RING_R = 97;
+  const TASKS_KEY = 'hourTrackerTasks_v1';
+  const PENDING_KEY = 'hourTrackerPending_v1';
+  const BAG_KEY = 'hourTrackerBag_v1';
+  const SEQ_KEY = 'hourTrackerSeq_v1';
+  const SOUND_KEY = 'hourTrackerSound_v1';
+
+  const GOAL = 90;                 // hours per main scenario (one month)
+  const WEEK_STREAK_HOURS = 25;    // a week counts toward the streak above this
+  const COINS_PER_HOUR = 100;
+  const COINS_PER_SUB = 25;
   const BUDGET_GOAL = 3600;
+
   const CATEGORIES = [
-    { key:'savings',   label:'Savings',    color:'#B79CED' }, // purple
-    { key:'loans',     label:'Loans',      color:'#4F86C6' }, // blue
-    { key:'groceries', label:'Groceries',  color:'#6FBE8E' }, // green
-    { key:'gas',       label:'Gas',        color:'#FFD166' }, // yellow
-    { key:'food',      label:'Food',       color:'#FF9F5A' }, // orange
-    { key:'subscription', label:'Subscription', color:'#000000' }, // black — auto-renews each month
-    { key:'other',     label:'Other',      color:'#FF6B6B' }  // red
+    { key:'savings',   label:'Savings',    color:'#A98BFF' },
+    { key:'loans',     label:'Loans',      color:'#4F86C6' },
+    { key:'groceries', label:'Groceries',  color:'#68E0AC' },
+    { key:'gas',       label:'Gas',        color:'#F2C14E' },
+    { key:'food',      label:'Food',       color:'#FF9F5A' },
+    { key:'subscription', label:'Subscription', color:'#6B6B84' },
+    { key:'other',     label:'Other',      color:'#FF5C6E' }
   ];
 
-  let entries = [];
-  let budgetData = null;      // { month:'YYYY-MM', categories:{...}, total:number }
-  let budgetArchive = {};     // { 'YYYY-MM': { total, categories, percentages } }
+  // ---- Main scenario sequence (inspired by the web novel, in order) ----
+  // One month = one main scenario. Clear 90 hours to advance; fail and it repeats.
+  const MAIN_SCENARIOS = [
+    { no:1,  name:'Prove Your Value',   diff:'F',
+      cond:'Prove your value. Accumulate 90 hours before the month ends.',
+      reward:'Sponsorship of a constellation. Passage to the next scenario.',
+      flavor:'Carriage 3807. The free service has ended.',
+      nodes:['Carriage 3807','The Dokkaebi','First Coin','The Grasshopper','Broken Egg Sac','Doors Open'] },
+    { no:2,  name:'Meeting',            diff:'E',
+      cond:'Assemble your company. Accumulate 90 hours before the month ends.',
+      reward:'A group that survives the next disaster with you.',
+      flavor:'Nobody clears a scenario alone. Not twice.',
+      nodes:['Empty Platform','Sponsor Selection','The Protagonist','The Bridge','Inside the Ichthyosaur','Surface Light'] },
+    { no:3,  name:'Emergency Defense',  diff:'D',
+      cond:'Hold the green zone. Accumulate 90 hours before the month ends.',
+      reward:'A region still standing in the morning.',
+      flavor:'Defend what you already took.',
+      nodes:['Green Zone','Barricade','First Watch','The Swarm','The Line Breaks','Dawn Holds'] },
+    { no:4,  name:'Struggle for the Flag', diff:'C',
+      cond:'Raise your flag. Accumulate 90 hours before the month ends.',
+      reward:'The qualifications of a king.',
+      flavor:'Elect a representative. Then become one.',
+      nodes:['Elect a Representative','The Flagpole','Chungmuro','Rival Kings','The Charge','Flag Raised'] },
+    { no:5,  name:'Disaster of Floods', diff:'B',
+      cond:'Survive the disaster. Accumulate 90 hours before the month ends.',
+      reward:'Seoul, still on the map.',
+      flavor:'The Absolute Throne is not worth what it costs.',
+      nodes:['Rising Water','Fallen Order','The Snake Hunt','Erosion','Rooftop Duel','Flood Recedes'] },
+    { no:6,  name:'Abandoned World',    diff:'A',
+      cond:'Cross Peace Land. Accumulate 90 hours before the month ends.',
+      reward:'300,000 coins and a world you did not have to destroy.',
+      flavor:'Planetary system No. 9871. It was peaceful once.',
+      nodes:['Gate to 9871','Peace Land','The Small People','Forty Days','The Choice','World Closes'] },
+    { no:7,  name:'Monster Hunting',    diff:'A+',
+      cond:'Clear the designated targets. Accumulate 90 hours before the month ends.',
+      reward:'A hunting ground emptied of things that hunt you.',
+      flavor:'New incarnations are spawning to fill the numbers.',
+      nodes:['Target Marked','The Raiders','Salvation Church','Nirvana Arrives','Thought Infection','Last Target Down'] },
+    { no:8,  name:'Demon King of Salvation', diff:'S',
+      cond:'Take the title they gave you. Accumulate 90 hours before the month ends.',
+      reward:'A name the constellations cannot ignore.',
+      flavor:'If salvation needs a demon king, be one.',
+      nodes:['Prison of Sinners','The Trial','Sword of Judgement','Broken Chains','The Crowd Turns','Title Claimed'] },
+    { no:9,  name:'Island of the Wandering', diff:'S+',
+      cond:'Make landfall. Accumulate 90 hours before the month ends.',
+      reward:'A hidden piece nobody else read about.',
+      flavor:'The island moves. So do you.',
+      nodes:['Pier of Exile','Salt Wind','Giant\u2019s Shadow','Hidden Piece','Storm Crossing','Land Sighted'] },
+    { no:10, name:'The Ark',            diff:'SS',
+      cond:'Board and hold the Ark. Accumulate 90 hours before the month ends.',
+      reward:'Passage through the flood of the 60th scenario.',
+      flavor:'Everyone wants on. Not everyone gets on.',
+      nodes:['Gate of the Ark','Flooded Decks','Passenger List','The Steersman','Rising Tide','Dry Land'] },
+    { no:11, name:'Revelation of the Star Stream', diff:'SSS',
+      cond:'Read what was never written down. Accumulate 90 hours before the month ends.',
+      reward:'The truth behind the scenarios.',
+      flavor:'Every constellation is watching this one.',
+      nodes:['Silent Channel','The Watchers','Unwritten Page','Constellation War','Stars Falling','Truth Spoken'] },
+    { no:12, name:'The Last Wall',      diff:'???',
+      cond:'Reach the final chapter. Accumulate 90 hours before the month ends.',
+      reward:'The ending. Yours to read.',
+      flavor:'You were always the only reader who made it this far.',
+      nodes:['Foot of the Wall','Echoes of Readers','The Fourth Wall','Cracks','The Climb','Final Chapter'] }
+  ];
+
+  const MEMBER_TITLES = [
+    'Unregistered Bag','Trainee Subscriber','Registered Bag','Regular Customer','Valued Patron',
+    'Gold Membership','Bureau Favourite','Star Stream VIP','Executive Member','Dokkaebi King\u2019s Guest',
+    'Master of the Bag','Owner of the Stream'
+  ];
+
+  const CONSTELLATIONS = [
+    'Secretive Plotter','Demon-like Judge of Fire','Prisoner of the Golden Headband',
+    'Abyssal Black Flame Dragon','Jealous Queen of Heaven','Sword Saint of the Mountain',
+    'Wandering Wall','Wine-drunk Poet'
+  ];
+  const REACTIONS = [
+    'is pleased','has left a donation','is watching closely','nods approvingly',
+    'laughs out loud','says it was worth the wait','is impressed'
+  ];
+
+  let entries = [];      // settled archive logs — one per day, written at episode end
+  let pending = [];      // sub-scenarios cleared today, not yet compiled
+  let tasks = [];        // { id, no, title, list, accumMs, runningSince, createdAt }
+  let bag = { items: [], purchases: [] };
+  let seq = 1;           // next sub-scenario number
+  let budgetData = null;
+  let budgetArchive = {};
   let cloudEnabled = false;
-  let persist = () => { writeLocal(entries); writeLocalBudget(budgetData); writeLocalBudgetArchive(budgetArchive); }; // reassigned below if cloud is enabled
+  let persist = () => {
+    writeLocal(entries); writeLocalPending(pending); writeLocalTasks(tasks); writeLocalBag(bag);
+    writeLocalSeq(seq); writeLocalBudget(budgetData); writeLocalBudgetArchive(budgetArchive);
+  };
+
+  // Everything the tracker measures counts both settled logs and the
+  // sub-scenarios cleared today but not yet compiled.
+  function allEntries(){ return entries.concat(pending); }
+
+  // ---------- storage ----------
+  function safeParse(raw, fallback){
+    try{ const v = JSON.parse(raw); return v == null ? fallback : v; }catch(e){ return fallback; }
+  }
+  function readLocal(){ const v = safeParse(localStorage.getItem(STORAGE_KEY), []); return Array.isArray(v) ? v : []; }
+  function writeLocal(list){ localStorage.setItem(STORAGE_KEY, JSON.stringify(list || [])); }
+  function readLocalPending(){ const v = safeParse(localStorage.getItem(PENDING_KEY), []); return Array.isArray(v) ? v : []; }
+  function writeLocalPending(list){ localStorage.setItem(PENDING_KEY, JSON.stringify(list || [])); }
+  function readLocalTasks(){
+    const list = safeParse(localStorage.getItem(TASKS_KEY), []);
+    return Array.isArray(list) ? list.map(normalizeTask) : [];
+  }
+  function writeLocalTasks(list){ localStorage.setItem(TASKS_KEY, JSON.stringify(list || [])); }
+  function readLocalBag(){ return normalizeBag(safeParse(localStorage.getItem(BAG_KEY), null)); }
+  function writeLocalBag(b){ localStorage.setItem(BAG_KEY, JSON.stringify(normalizeBag(b))); }
+  function readLocalSeq(){ const n = Number(localStorage.getItem(SEQ_KEY)); return Number.isFinite(n) && n > 0 ? n : 1; }
+  function writeLocalSeq(n){ localStorage.setItem(SEQ_KEY, String(n)); }
+  function readLocalBudget(){ return safeParse(localStorage.getItem(BUDGET_KEY), null); }
+  function writeLocalBudget(b){ if(b) localStorage.setItem(BUDGET_KEY, JSON.stringify(b)); }
+  function readLocalBudgetArchive(){ return safeParse(localStorage.getItem(BUDGET_ARCHIVE_KEY), {}) || {}; }
+  function writeLocalBudgetArchive(a){ localStorage.setItem(BUDGET_ARCHIVE_KEY, JSON.stringify(a || {})); }
+
+  function normalizeTask(t){
+    return {
+      id: t.id || ('q' + Math.random().toString(36).slice(2,9)),
+      no: Number(t.no) || 0,
+      title: String(t.title || 'Untitled'),
+      list: t.list === 'planned' ? 'planned' : 'available',
+      accumMs: Number(t.accumMs) || 0,
+      runningSince: t.runningSince || null,
+      createdAt: t.createdAt || new Date().toISOString()
+    };
+  }
+  function normalizeBag(b){
+    return {
+      items: (b && Array.isArray(b.items)) ? b.items : [],
+      purchases: (b && Array.isArray(b.purchases)) ? b.purchases : []
+    };
+  }
+  // The sub-scenario counter only ever moves forward, whatever the cloud hands us.
+  function syncSeq(){
+    let highest = 0;
+    tasks.forEach(t => { if(t.no > highest) highest = t.no; });
+    allEntries().forEach(e => {
+      const n = Number(e.scenarioNo) || 0;
+      if(n > highest) highest = n;
+      (e.subScenarios || []).forEach(v => { const k = Number(v) || 0; if(k > highest) highest = k; });
+    });
+    seq = Math.max(Number(seq) || 1, highest + 1, readLocalSeq());
+    const el = document.getElementById('nextNo');
+    if(el) el.textContent = String(seq);
+  }
 
   function emptyCategories(){
     const c = {};
     CATEGORIES.forEach(cat => c[cat.key] = 0);
     return c;
   }
-  function currentMonthKey(){
-    return `${curYear}-${String(curMonth+1).padStart(2,'0')}`;
-  }
-  function readLocalBudget(){
-    try{
-      const raw = localStorage.getItem(BUDGET_KEY);
-      return raw ? JSON.parse(raw) : null;
-    }catch(e){ return null; }
-  }
-  function writeLocalBudget(b){
-    if(b) localStorage.setItem(BUDGET_KEY, JSON.stringify(b));
-  }
-  function readLocalBudgetArchive(){
-    try{
-      const raw = localStorage.getItem(BUDGET_ARCHIVE_KEY);
-      return raw ? JSON.parse(raw) : {};
-    }catch(e){ return {}; }
-  }
-  function writeLocalBudgetArchive(a){
-    localStorage.setItem(BUDGET_ARCHIVE_KEY, JSON.stringify(a || {}));
-  }
-  // If the stored running total belongs to a previous month, snapshot it
-  // into the archive (with each category's % of that month's total) and
-  // start a fresh total for the current month. "Subscription" is the only
-  // category that automatically re-applies into the new month; every other
-  // category resets to zero. Returns true if it rolled.
+  function currentMonthKey(){ return `${curYear}-${String(curMonth+1).padStart(2,'0')}`; }
+
+  // Unchanged rollover: archive last month's split, carry subscriptions forward.
   function applyBudgetRollover(){
     const key = currentMonthKey();
     if(!budgetData){
@@ -822,80 +1529,43 @@
     const freshCategories = emptyCategories();
     const subscriptionCarry = Number(oldCats.subscription) || 0;
     freshCategories.subscription = subscriptionCarry;
-
     budgetData = { month: key, categories: freshCategories, total: subscriptionCarry };
     return true;
   }
+
   function fmtMoney(n){
     const sign = n < 0 ? '-' : '';
     return `${sign}$${Math.abs(Math.round(n * 100) / 100).toFixed(2)}`;
   }
-
-  function readLocal(){
-    try{
-      const raw = localStorage.getItem(STORAGE_KEY);
-      return raw ? JSON.parse(raw) : [];
-    }catch(e){ return []; }
-  }
-  function writeLocal(list){
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
-  }
-  function readSeedEntries(){ return []; } // reserved (no longer used)
-  function mergedLocal(){
-    return readLocal();
-  }
-
-  function setSyncBadge(){
-    const badge = document.getElementById('syncBadge');
-    const hint = document.getElementById('syncHint');
-    if(!badge) return;
-    if(cloudEnabled){
-      badge.textContent = '☁️ Synced across devices';
-      hint.textContent = '';
-    } else {
-      badge.textContent = '💾 Saved on this device only';
-      hint.textContent = 'Add a Firebase config in the code to sync across devices.';
-    }
-  }
-
-  function fmtNum(n){
-    n = Math.round(n * 100) / 100;
-    return (n % 1 === 0) ? String(n) : String(n.toFixed(2)).replace(/0+$/,'').replace(/\.$/,'');
-  }
-  // Main-page visuals truncate (not round) decimals — the underlying data
-  // keeps full precision, this is display-only.
-  function truncNum(n){
-    return String(Math.trunc(n));
-  }
+  function truncNum(n){ return String(Math.trunc(n)); }
+  function fmtCoins(n){ return Math.round(n).toLocaleString(); }
   function dateKey(d){
-    const y = d.getFullYear();
-    const m = String(d.getMonth()+1).padStart(2,'0');
-    const day = String(d.getDate()).padStart(2,'0');
-    return `${y}-${m}-${day}`;
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  }
+  function monthKeyOf(dateStr){ return String(dateStr).slice(0,7); }
+  function escapeHtml(s){
+    return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   }
 
   const now = new Date();
   const curYear = now.getFullYear();
-  const curMonth = now.getMonth(); // 0-indexed
+  const curMonth = now.getMonth();
   const monthNames = ["January","February","March","April","May","June","July","August","September","October","November","December"];
 
-  document.getElementById('monthLabel').textContent = `${monthNames[curMonth]} ${curYear}`;
+  document.getElementById('monthLabel').textContent = `${monthNames[curMonth]} ${curYear}`.toUpperCase();
   document.getElementById('calTitle').textContent = `${monthNames[curMonth]} ${curYear}`;
   document.getElementById('fDate').value = dateKey(now);
   document.getElementById('fDate').max = dateKey(now);
 
   function entriesForCurrentMonth(all){
-    return all.filter(e => {
-      const d = new Date(e.date + 'T00:00:00');
-      return d.getFullYear() === curYear && d.getMonth() === curMonth;
-    });
+    return all.filter(e => monthKeyOf(e.date) === currentMonthKey());
   }
+  function totalHoursOf(list){ return list.reduce((s,e) => s + Number(e.hours || 0), 0); }
 
   function startOfWeek(d){
     const copy = new Date(d);
     copy.setHours(0,0,0,0);
-    const day = copy.getDay(); // 0 = Sunday
-    copy.setDate(copy.getDate() - day);
+    copy.setDate(copy.getDate() - copy.getDay()); // weeks start Sunday
     return copy;
   }
   function endOfWeek(d){
@@ -906,183 +1576,1051 @@
     return e;
   }
 
-  // Average hours per week, across the whole current year, counting only
-  // the span from the first logged week through the last logged week
-  // (no padding from empty weeks before the first log or after the last).
+  // ---- Weekly streak: consecutive weeks with more than 25 hours logged ----
+  // The week in progress never breaks the streak; it only extends it once it
+  // crosses the line.
+  function weekHoursMap(list){
+    const map = {};
+    list.forEach(e => {
+      const key = dateKey(startOfWeek(new Date(e.date + 'T00:00:00')));
+      map[key] = (map[key] || 0) + Number(e.hours || 0);
+    });
+    return map;
+  }
+  function computeWeekStreak(list){
+    const map = weekHoursMap(list);
+    const cursor = startOfWeek(new Date());
+    if(!((map[dateKey(cursor)] || 0) > WEEK_STREAK_HOURS)){
+      cursor.setDate(cursor.getDate() - 7);
+    }
+    let streak = 0;
+    while((map[dateKey(cursor)] || 0) > WEEK_STREAK_HOURS){
+      streak++;
+      cursor.setDate(cursor.getDate() - 7);
+    }
+    return streak;
+  }
+  function bestWeekHours(list){
+    const vals = Object.values(weekHoursMap(list));
+    return vals.length ? Math.max(...vals) : 0;
+  }
+  function clearedWeeksTotal(list){
+    return Object.values(weekHoursMap(list)).filter(v => v > WEEK_STREAK_HOURS).length;
+  }
+
+  // ---- Main scenario progression, derived from history ----
+  // Walk every month from the first logged month up to this one. A finished
+  // month that hit 90 hours advances the story; anything else repeats it.
+  function scenarioIndex(list){
+    if(list.length === 0) return 0;
+    const byMonth = {};
+    list.forEach(e => {
+      const k = monthKeyOf(e.date);
+      byMonth[k] = (byMonth[k] || 0) + Number(e.hours || 0);
+    });
+    const firstKey = Object.keys(byMonth).sort()[0];
+    let [y, m] = firstKey.split('-').map(Number);
+    const nowKey = currentMonthKey();
+    let idx = 0, guard = 0;
+    while(guard++ < 600){
+      const key = `${y}-${String(m).padStart(2,'0')}`;
+      if(key === nowKey) break;            // this month is still in play
+      if((byMonth[key] || 0) >= GOAL) idx++;
+      m++;
+      if(m > 12){ m = 1; y++; }
+    }
+    return idx;
+  }
+  function currentScenario(list){
+    const idx = scenarioIndex(list);
+    const capped = Math.min(idx, MAIN_SCENARIOS.length - 1);
+    return { scenario: MAIN_SCENARIOS[capped], index: capped, finished: idx >= MAIN_SCENARIOS.length };
+  }
+
+  // ---- Coins & membership ----
+  function coinsEarned(list){
+    return Math.round(totalHoursOf(list) * COINS_PER_HOUR + list.length * COINS_PER_SUB);
+  }
+  function coinsSpent(){
+    return bag.purchases.reduce((s,p) => s + (Number(p.price) || 0), 0);
+  }
+  function memberTitle(level){ return MEMBER_TITLES[Math.min(level, MEMBER_TITLES.length) - 1]; }
+  function xpToNext(level){ return 500 * level; }
+  function membershipFromXp(xp){
+    let level = 1, floor = 0;
+    while(xp >= floor + xpToNext(level)){
+      floor += xpToNext(level);
+      level++;
+      if(level > 300) break;
+    }
+    return { level, into: xp - floor, need: xpToNext(level) };
+  }
+
+  function gameStats(list){
+    const monthTotal = totalHoursOf(entriesForCurrentMonth(list));
+    const earned = coinsEarned(list);
+    const spent = coinsSpent();
+    const mem = membershipFromXp(spent);
+    const perDay = {}, counts = {};
+    list.forEach(e => {
+      perDay[e.date] = (perDay[e.date] || 0) + Number(e.hours || 0);
+      counts[e.date] = (counts[e.date] || 0) + 1;
+    });
+    return {
+      total: totalHoursOf(list),
+      subs: list.length,
+      monthTotal,
+      earned, spent,
+      balance: earned - spent,
+      level: mem.level,
+      levelInto: mem.into,
+      levelNeed: mem.need,
+      weekStreak: computeWeekStreak(list),
+      clearedWeeks: clearedWeeksTotal(list),
+      bestWeek: bestWeekHours(list),
+      maxDayHours: Math.max(0, ...Object.values(perDay)),
+      maxDayCount: Math.max(0, ...Object.values(counts)),
+      maxSession: Math.max(0, ...list.map(e => Number(e.hours || 0))),
+      purchases: bag.purchases.length
+    };
+  }
+
+  const TITLES = [
+    { key:'reader',  name:'Constant Reader',     desc:'Clear one sub-scenario',   test:s => s.subs >= 1 },
+    { key:'ten',     name:'Regular Subscriber',  desc:'Clear 10 sub-scenarios',   test:s => s.subs >= 10 },
+    { key:'fifty',   name:'Veteran Incarnation', desc:'Clear 50 sub-scenarios',   test:s => s.subs >= 50 },
+    { key:'triple',  name:'Efficient Plotter',   desc:'Three cleared in one day', test:s => s.maxDayCount >= 3 },
+    { key:'deep',    name:'Long Chapter',        desc:'One 3h+ session',          test:s => s.maxSession >= 3 },
+    { key:'eight',   name:'Sleepless',           desc:'8 hours in a single day',  test:s => s.maxDayHours >= 8 },
+    { key:'week1',   name:'First Ordeal',        desc:'One week over 25h',        test:s => s.clearedWeeks >= 1 },
+    { key:'week4',   name:'Unbroken Chain',      desc:'4 week streak',            test:s => s.weekStreak >= 4 },
+    { key:'week12',  name:'Regressor',           desc:'12 week streak',           test:s => s.weekStreak >= 12 },
+    { key:'clear',   name:'Scenario Clearer',    desc:'Finish a main scenario',   test:s => s.monthTotal >= GOAL },
+    { key:'buy',     name:'Dokkaebi Patron',     desc:'Buy from the bag',         test:s => s.purchases >= 1 },
+    { key:'lv5',     name:'Gold Membership',     desc:'Reach membership level 5', test:s => s.level >= 5 }
+  ];
+
+  // ---------- sound ----------
+  let soundOn = localStorage.getItem(SOUND_KEY) !== 'off';
+  let audioCtx = null;
+  function updateSoundIcon(){
+    const b = document.getElementById('soundToggle');
+    b.textContent = soundOn ? '◈' : '◇';
+    b.style.opacity = soundOn ? '1' : '0.5';
+  }
+  updateSoundIcon();
+  document.getElementById('soundToggle').addEventListener('click', () => {
+    soundOn = !soundOn;
+    localStorage.setItem(SOUND_KEY, soundOn ? 'on' : 'off');
+    updateSoundIcon();
+    if(soundOn) playNotes([660, 880], 0.09);
+  });
+  function playNotes(freqs, step = 0.11){
+    if(!soundOn) return;
+    try{
+      audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+      if(audioCtx.state === 'suspended') audioCtx.resume();
+      freqs.forEach((f, i) => {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.value = f;
+        const t0 = audioCtx.currentTime + i * step;
+        gain.gain.setValueAtTime(0.0001, t0);
+        gain.gain.exponentialRampToValueAtTime(0.14, t0 + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.0001, t0 + step + 0.14);
+        osc.connect(gain).connect(audioCtx.destination);
+        osc.start(t0);
+        osc.stop(t0 + step + 0.2);
+      });
+    }catch(e){}
+  }
+
+  // ---------- message windows ----------
+  function toast(msg, kind = '', ms = 3400){
+    const stack = document.getElementById('toastStack');
+    const el = document.createElement('div');
+    el.className = 'toast' + (kind ? ' ' + kind : '');
+    el.textContent = msg;
+    stack.appendChild(el);
+    setTimeout(() => {
+      el.classList.add('out');
+      setTimeout(() => el.remove(), 300);
+    }, ms);
+  }
+  function systemMsg(text, kind){ toast(`[ ${text} ]`, kind); }
+  function constellationMsg(){
+    const c = CONSTELLATIONS[Math.floor(Math.random() * CONSTELLATIONS.length)];
+    const r = REACTIONS[Math.floor(Math.random() * REACTIONS.length)];
+    systemMsg(`The constellation '${c}' ${r}.`);
+  }
+  function floatGain(text, el){
+    const target = el || document.getElementById('scenarioWin');
+    if(!target) return;
+    const rect = target.getBoundingClientRect();
+    const node = document.createElement('div');
+    node.className = 'float-gain';
+    node.textContent = text;
+    node.style.left = (rect.left + rect.width / 2) + 'px';
+    node.style.top = Math.max(70, Math.min(rect.top + 80, window.innerHeight - 130)) + 'px';
+    document.body.appendChild(node);
+    setTimeout(() => node.remove(), 1600);
+  }
+
+  function showLevelUp(level){
+    document.getElementById('luHeading').textContent = `Membership Level ${level}`;
+    document.getElementById('luTitle').textContent = memberTitle(level);
+    const lines = [
+      'The bag is heavier than it looks.',
+      'The Dokkaebi Bureau has updated your record.',
+      'Spending is the only thing the bag respects.',
+      'More room inside. More reasons to earn.'
+    ];
+    document.getElementById('luLine').textContent = lines[Math.floor(Math.random() * lines.length)];
+    document.getElementById('levelUpOverlay').classList.add('show');
+    spawnConfetti();
+    playNotes([523, 659, 784, 1047], 0.1);
+  }
+  document.getElementById('luClose').addEventListener('click', () => {
+    document.getElementById('levelUpOverlay').classList.remove('show');
+  });
+
+  // ============================================================
+  // Sub-scenarios
+  // ============================================================
+  function elapsedMs(task){
+    const base = Number(task.accumMs) || 0;
+    return task.runningSince ? base + (Date.now() - task.runningSince) : base;
+  }
+  function fmtClock(ms){
+    const totalSec = Math.max(0, Math.floor(ms / 1000));
+    const h = Math.floor(totalSec / 3600);
+    const m = Math.floor((totalSec % 3600) / 60);
+    const s = totalSec % 60;
+    return h > 0
+      ? `${h}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`
+      : `${m}:${String(s).padStart(2,'0')}`;
+  }
+  function fmtDuration(hours){
+    const totalMin = Math.round(hours * 60);
+    const h = Math.floor(totalMin / 60);
+    const m = totalMin % 60;
+    if(h && m) return `${h}h ${m}m`;
+    if(h) return `${h}h`;
+    return `${m}m`;
+  }
+
+  document.getElementById('newSubForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const input = document.getElementById('subInput');
+    const title = input.value.trim();
+    if(!title) return;
+    const no = seq;
+    tasks = tasks.concat([{
+      id: 'q' + Date.now() + '-' + Math.random().toString(36).slice(2,7),
+      no,
+      title,
+      list: 'available',
+      accumMs: 0,
+      runningSince: null,
+      createdAt: new Date().toISOString()
+    }]);
+    seq = no + 1;
+    input.value = '';
+    persist();
+    syncSeq();
+    renderBoard();
+    playNotes([494, 659], 0.07);
+    systemMsg(`Sub-scenario #${no} — ${title}`);
+  });
+
+  function findTask(id){ return tasks.find(t => t.id === id); }
+
+  function startTask(id){
+    const t = findTask(id);
+    if(!t || t.runningSince) return;
+    // One clock at a time — starting a new one banks whatever was running.
+    tasks.forEach(other => {
+      if(other.runningSince){
+        other.accumMs = elapsedMs(other);
+        other.runningSince = null;
+      }
+    });
+    t.runningSince = Date.now();
+    t.list = 'available';
+    persist();
+    renderBoard();
+    playNotes([587, 784], 0.07);
+  }
+  function pauseTask(id){
+    const t = findTask(id);
+    if(!t || !t.runningSince) return;
+    t.accumMs = elapsedMs(t);
+    t.runningSince = null;
+    persist();
+    renderBoard();
+    playNotes([494, 392], 0.07);
+  }
+  function deleteTask(id){
+    tasks = tasks.filter(t => t.id !== id);
+    persist();
+    renderBoard();
+  }
+  function moveTask(id, list){
+    const t = findTask(id);
+    if(!t || t.list === list) return;
+    t.list = list;
+    persist();
+    renderBoard();
+    playNotes([523, 392], 0.06);
+  }
+
+  function subCardHtml(t){
+    const running = !!t.runningSince;
+    const other = t.list === 'available' ? 'planned' : 'available';
+    const arrow = t.list === 'available' ? 'PLAN →' : '← OPEN';
+    return `
+      <div class="sub-top">
+        <div>
+          <span class="sub-no">SUB-SCENARIO #${t.no}</span>
+          <div class="sub-title">${escapeHtml(t.title)}</div>
+        </div>
+        <div class="sub-time" data-time="${t.id}">${fmtClock(elapsedMs(t))}</div>
+      </div>
+      <div class="sub-actions">
+        <button class="sbtn ${running ? 'pause' : 'start'}" data-act="${running ? 'pause' : 'start'}">${running ? '❚❚ PAUSE' : '▶ START'}</button>
+        <button class="sbtn clear" data-act="complete">CLEAR</button>
+        <button class="sbtn" data-act="manual">TIME</button>
+        <button class="sbtn ghost" data-act="move" data-to="${other}">${arrow}</button>
+        <button class="sbtn ghost" data-act="delete" title="Discard">✕</button>
+      </div>`;
+  }
+
+  function renderBoard(){
+    ['available','planned'].forEach(listName => {
+      const host = document.getElementById(listName === 'available' ? 'listAvailable' : 'listPlanned');
+      host.innerHTML = '';
+      const mine = tasks.filter(t => t.list === listName);
+      document.getElementById(listName === 'available' ? 'countAvailable' : 'countPlanned').textContent = String(mine.length);
+
+      if(mine.length === 0){
+        const empty = document.createElement('div');
+        empty.className = 'col-empty';
+        empty.textContent = listName === 'available'
+          ? 'Nothing open. Name a sub-scenario above, or drag one over from planned.'
+          : 'Nothing queued. Drag a sub-scenario here to save it for later.';
+        host.appendChild(empty);
+        return;
+      }
+
+      mine.forEach(t => {
+        const card = document.createElement('div');
+        card.className = 'sub' + (t.runningSince ? ' running' : '');
+        card.draggable = true;
+        card.dataset.id = t.id;
+        card.innerHTML = subCardHtml(t);
+        card.addEventListener('dragstart', (ev) => {
+          ev.dataTransfer.setData('text/plain', t.id);
+          ev.dataTransfer.effectAllowed = 'move';
+          card.classList.add('dragging');
+        });
+        card.addEventListener('dragend', () => card.classList.remove('dragging'));
+        card.addEventListener('click', (ev) => {
+          const btn = ev.target.closest('button[data-act]');
+          if(!btn) return;
+          const act = btn.dataset.act;
+          if(act === 'start') startTask(t.id);
+          else if(act === 'pause') pauseTask(t.id);
+          else if(act === 'complete') completeTask(t.id);
+          else if(act === 'manual') openLogModal(t.id, 0);
+          else if(act === 'move') moveTask(t.id, btn.dataset.to);
+          else if(act === 'delete') deleteTask(t.id);
+        });
+        host.appendChild(card);
+      });
+    });
+    renderClearedToday();
+  }
+
+  // ---- drag and drop between the two panels ----
+  function cardAfterPoint(container, y){
+    const cards = [...container.querySelectorAll('.sub:not(.dragging)')];
+    return cards.reduce((closest, child) => {
+      const box = child.getBoundingClientRect();
+      const offset = y - box.top - box.height / 2;
+      if(offset < 0 && offset > closest.offset) return { offset, element: child };
+      return closest;
+    }, { offset: Number.NEGATIVE_INFINITY, element: null }).element;
+  }
+  ['colAvailable','colPlanned'].forEach(colId => {
+    const col = document.getElementById(colId);
+    const listName = col.dataset.list;
+    col.addEventListener('dragover', (ev) => {
+      ev.preventDefault();
+      ev.dataTransfer.dropEffect = 'move';
+      col.classList.add('dragover');
+    });
+    col.addEventListener('dragleave', (ev) => {
+      if(!col.contains(ev.relatedTarget)) col.classList.remove('dragover');
+    });
+    col.addEventListener('drop', (ev) => {
+      ev.preventDefault();
+      col.classList.remove('dragover');
+      const id = ev.dataTransfer.getData('text/plain');
+      const task = findTask(id);
+      if(!task) return;
+
+      const body = col.querySelector('.col-body');
+      const before = cardAfterPoint(body, ev.clientY);
+      const changedList = task.list !== listName;
+      task.list = listName;
+
+      // Reorder inside the shared array so the visual order sticks.
+      tasks = tasks.filter(t => t.id !== id);
+      if(before){
+        const idx = tasks.findIndex(t => t.id === before.dataset.id);
+        tasks.splice(idx === -1 ? tasks.length : idx, 0, task);
+      } else {
+        tasks.push(task);
+      }
+      persist();
+      renderBoard();
+      if(changedList) playNotes([523, 392], 0.06);
+    });
+  });
+
+  function renderClearedToday(){
+    const wrap = document.getElementById('clearedTodayWrap');
+    const todayKey = dateKey(new Date());
+    const open = pending.filter(e => e.date === todayKey).slice().reverse();
+    const settled = entries.filter(e => e.date === todayKey).slice().reverse();
+    if(open.length === 0 && settled.length === 0){ wrap.innerHTML = ''; return; }
+
+    const openHours = totalHoursOf(open);
+    let html = '';
+
+    if(open.length){
+      html += `<div class="cleared-head">TODAY'S EPISODE · ${open.length} CLEARED · ${fmtDuration(openHours)}</div>`;
+      html += open.map(e => {
+        const no = Number(e.scenarioNo) || 0;
+        const label = no ? `#${no} · ${escapeHtml(e.description || '')}` : escapeHtml(e.description || 'Sub-scenario');
+        return `<div class="cleared-row"><span>${label}</span><span class="ct">${fmtDuration(Number(e.hours) || 0)}</span></div>`;
+      }).join('');
+      html += `
+        <div class="episode-bar">
+          <div class="ep-note">Closing the episode files all ${open.length} of today's clears into the archive as a single log. Coins and map progress are already yours.</div>
+          <button class="episode-btn" id="closeEpisodeBtn">⟡ CLOSE THE EPISODE</button>
+        </div>`;
+    }
+
+    if(settled.length){
+      html += `<div class="cleared-head">FILED TODAY</div>`;
+      html += settled.map(e => `
+        <div class="cleared-row settled">
+          <span>${escapeHtml(e.description || 'Episode')}</span>
+          <span class="ct">${fmtDuration(Number(e.hours) || 0)}</span>
+        </div>`).join('');
+    }
+
+    wrap.innerHTML = html;
+    const btn = document.getElementById('closeEpisodeBtn');
+    if(btn) btn.addEventListener('click', closeEpisode);
+  }
+
+  setInterval(() => {
+    tasks.forEach(t => {
+      if(!t.runningSince) return;
+      const el = document.querySelector(`[data-time="${t.id}"]`);
+      if(el) el.textContent = fmtClock(elapsedMs(t));
+    });
+  }, 1000);
+
+  // ---- clearing a sub-scenario ----
+  let pendingTaskId = null;
+
+  function completeTask(id){
+    const t = findTask(id);
+    if(!t) return;
+    const ms = elapsedMs(t);
+    if(ms < 60000){ openLogModal(id, ms); return; }
+    clearSub(t, Math.round((ms / 3600000) * 100) / 100, dateKey(new Date()));
+  }
+
+  function clearSub(task, hours, date){
+    if(!(hours > 0)) return;
+    const before = gameStats(allEntries());
+    const beforeScenario = currentScenario(allEntries());
+
+    pending = pending.concat([{
+      id: Date.now() + '-' + Math.random().toString(36).slice(2,8),
+      date,
+      hours,
+      description: task ? task.title : 'Sub-scenario',
+      scenarioNo: task ? task.no : null,
+      loggedAt: new Date().toISOString()
+    }]);
+    if(task) tasks = tasks.filter(t => t.id !== task.id);
+    persist();
+    render();
+
+    const after = gameStats(allEntries());
+    const gained = after.earned - before.earned;
+
+    floatGain(`+${fmtCoins(gained)} C`);
+    playNotes(hours >= 2 ? [523, 659, 880] : [659, 880], 0.08);
+    systemMsg(`You have earned ${fmtCoins(gained)} coins.`, 'coin');
+    setTimeout(constellationMsg, 700);
+
+    let delay = 1500;
+
+    TITLES.filter(t => t.test(after) && !t.test(before)).forEach(t => {
+      setTimeout(() => {
+        systemMsg(`You have acquired the title '${t.name}'.`, 'gold');
+        spawnConfetti();
+        playNotes([784, 988, 1175], 0.09);
+      }, delay);
+      delay += 1000;
+    });
+
+    // Waypoints along the main scenario map
+    const scn = beforeScenario.scenario;
+    const step = GOAL / scn.nodes.length;
+    for(let i = 1; i <= scn.nodes.length; i++){
+      const line = step * i;
+      if(before.monthTotal < line && after.monthTotal >= line){
+        const label = scn.nodes[i-1];
+        const isLast = i === scn.nodes.length;
+        setTimeout(() => {
+          if(isLast){
+            systemMsg(`Main Scenario #${scn.no} — ${scn.name} — cleared.`, 'gold');
+            spawnConfetti();
+            playNotes([523, 659, 784, 1047, 1319], 0.1);
+          } else {
+            systemMsg(`Waypoint reached: ${label}.`, 'gold');
+          }
+        }, delay);
+        delay += 1000;
+      }
+    }
+
+    if(after.weekStreak > before.weekStreak){
+      setTimeout(() => systemMsg(`Week streak: ${after.weekStreak}. Over 25 hours, ${after.weekStreak} weeks running.`, 'gold'), delay);
+    }
+  }
+
+  // ============================================================
+  // Episode settlement
+  // Every sub-scenario cleared in a day is compiled into ONE archive log
+  // when the episode is closed. Days left open past midnight settle
+  // themselves the next time the page loads, so nothing is ever stranded.
+  // ============================================================
+  function compileDay(date, items){
+    const hours = Math.round(items.reduce((s,e) => s + Number(e.hours || 0), 0) * 100) / 100;
+    const nos = items.map(e => Number(e.scenarioNo) || 0).filter(Boolean);
+    const description = items.map(e => e.description).join(' · ');
+    return {
+      id: 'ep' + Date.parse(date + 'T00:00:00') + '-' + Math.random().toString(36).slice(2,7),
+      date,
+      hours,
+      description,
+      episode: true,
+      subScenarios: nos,
+      count: items.length,
+      loggedAt: new Date().toISOString()
+    };
+  }
+
+  function settleDates(dates){
+    if(dates.length === 0) return [];
+    const made = [];
+    dates.forEach(date => {
+      const items = pending.filter(e => e.date === date);
+      if(items.length === 0) return;
+      made.push(compileDay(date, items));
+    });
+    if(made.length === 0) return [];
+    entries = entries.concat(made);
+    pending = pending.filter(e => !dates.includes(e.date));
+    return made;
+  }
+
+  // Auto-close any episode left hanging from an earlier day.
+  function settleStalePending(){
+    const today = dateKey(new Date());
+    const stale = [...new Set(pending.map(e => e.date))].filter(d => d !== today);
+    const made = settleDates(stale);
+    if(made.length){
+      persist();
+      setTimeout(() => systemMsg(`${made.length} unclosed episode${made.length === 1 ? '' : 's'} settled automatically.`), 900);
+    }
+    return made.length > 0;
+  }
+
+  function closeEpisode(){
+    const today = dateKey(new Date());
+    const items = pending.filter(e => e.date === today);
+    if(items.length === 0){
+      systemMsg('Nothing cleared yet. There is no episode to close.');
+      return;
+    }
+    const made = settleDates([today]);
+    persist();
+    render();
+    const log = made[0];
+    spawnConfetti();
+    playNotes([523, 659, 784, 1047], 0.09);
+    systemMsg(`Episode closed. ${log.count} sub-scenario${log.count === 1 ? '' : 's'}, ${fmtDuration(log.hours)}, filed to the archive as one log.`, 'gold');
+    setTimeout(constellationMsg, 900);
+  }
+
+  // ---- time modal ----
+  const overlay = document.getElementById('modalOverlay');
+  function openLogModal(taskId, prefillMs){
+    pendingTaskId = taskId;
+    const t = findTask(taskId);
+    document.getElementById('logSubName').textContent = t ? `Sub-scenario #${t.no} — ${t.title}` : '';
+    const ms = prefillMs || (t ? elapsedMs(t) : 0);
+    const totalMin = Math.round(ms / 60000);
+    document.getElementById('fHours').value = totalMin >= 60 ? Math.floor(totalMin / 60) : '';
+    document.getElementById('fMinutes').value = totalMin % 60 || (totalMin < 60 && totalMin > 0 ? totalMin : '');
+    document.getElementById('fDate').value = dateKey(new Date());
+    overlay.classList.add('open');
+    setTimeout(() => document.getElementById('fHours').focus(), 120);
+  }
+  document.getElementById('cancelBtn').addEventListener('click', closeModal);
+  overlay.addEventListener('click', (e) => { if(e.target === overlay) closeModal(); });
+  function closeModal(){
+    overlay.classList.remove('open');
+    pendingTaskId = null;
+    document.getElementById('logForm').reset();
+    document.getElementById('fDate').value = dateKey(new Date());
+  }
+  document.getElementById('quickTimes').addEventListener('click', (e) => {
+    const btn = e.target.closest('.quick-time');
+    if(!btn) return;
+    const add = Number(btn.dataset.mins) || 0;
+    const h = Number(document.getElementById('fHours').value) || 0;
+    const m = Number(document.getElementById('fMinutes').value) || 0;
+    const total = h * 60 + m + add;
+    document.getElementById('fHours').value = Math.floor(total / 60) || '';
+    document.getElementById('fMinutes').value = total % 60 || '';
+  });
+  document.getElementById('logForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const h = Number(document.getElementById('fHours').value) || 0;
+    const m = Number(document.getElementById('fMinutes').value) || 0;
+    const date = document.getElementById('fDate').value;
+    const hours = Math.round((h + m / 60) * 100) / 100;
+    if(!date || hours <= 0){
+      systemMsg('No time recorded. The dokkaebi pays nothing for nothing.');
+      return;
+    }
+    const t = findTask(pendingTaskId);
+    closeModal();
+    clearSub(t, hours, date);
+  });
+
+  // ============================================================
+  // Dokkaebi bag
+  // ============================================================
+  document.getElementById('newItemForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const name = document.getElementById('itemName').value.trim();
+    const price = Math.round(Number(document.getElementById('itemPrice').value));
+    if(!name || !(price > 0)) return;
+    bag.items = bag.items.concat([{
+      id: 'i' + Date.now() + '-' + Math.random().toString(36).slice(2,7),
+      name, price,
+      listedAt: new Date().toISOString()
+    }]);
+    document.getElementById('itemName').value = '';
+    document.getElementById('itemPrice').value = '';
+    persist();
+    renderBag();
+    playNotes([523, 698], 0.07);
+    systemMsg(`'${name}' is now stocked in the Dokkaebi Bag.`);
+  });
+
+  function buyItem(itemId){
+    const item = bag.items.find(i => i.id === itemId);
+    if(!item) return;
+    const before = gameStats(allEntries());
+    if(before.balance < item.price){
+      systemMsg(`Not enough coins. You need ${fmtCoins(item.price - before.balance)} more.`);
+      playNotes([330, 247], 0.08);
+      return;
+    }
+    bag.purchases = bag.purchases.concat([{
+      id: 'p' + Date.now() + '-' + Math.random().toString(36).slice(2,7),
+      itemId: item.id,
+      name: item.name,
+      price: item.price,
+      at: new Date().toISOString()
+    }]);
+    persist();
+    render();
+
+    const after = gameStats(allEntries());
+    playNotes([784, 988, 1175], 0.08);
+    floatGain(`−${fmtCoins(item.price)} C`, document.getElementById('itemList'));
+    systemMsg(`'${item.name}' has been taken from the Dokkaebi Bag.`, 'gold');
+    setTimeout(() => systemMsg(`The bag absorbs ${fmtCoins(item.price)} coins. Bag XP increased.`, 'coin'), 800);
+
+    let delay = 1700;
+    TITLES.filter(t => t.test(after) && !t.test(before)).forEach(t => {
+      setTimeout(() => { systemMsg(`You have acquired the title '${t.name}'.`, 'gold'); spawnConfetti(); }, delay);
+      delay += 1000;
+    });
+    if(after.level > before.level) setTimeout(() => showLevelUp(after.level), delay);
+  }
+
+  function removeItem(itemId){
+    bag.items = bag.items.filter(i => i.id !== itemId);
+    if(editingItemId === itemId) editingItemId = null;
+    persist();
+    renderBag();
+  }
+
+  let editingItemId = null;
+  function savePrice(itemId, raw){
+    const item = bag.items.find(i => i.id === itemId);
+    if(!item) return;
+    const price = Math.round(Number(raw));
+    if(!(price > 0)){
+      systemMsg('A price has to be more than zero coins.');
+      return;
+    }
+    const was = item.price;
+    item.price = price;
+    editingItemId = null;
+    persist();
+    renderBag();
+    if(price !== was){
+      playNotes([587, 740], 0.06);
+      systemMsg(`'${item.name}' repriced: ${fmtCoins(was)} C → ${fmtCoins(price)} C.`, 'coin');
+    }
+  }
+
+  function renderBag(){
+    const stats = gameStats(allEntries());
+    document.getElementById('purseAmount').textContent = `${fmtCoins(stats.balance)} C`;
+    document.getElementById('coinValue').textContent = fmtCoins(stats.balance);
+    document.getElementById('coinNote').textContent = `${fmtCoins(stats.earned)} earned · ${fmtCoins(stats.spent)} spent`;
+
+    const host = document.getElementById('itemList');
+    host.innerHTML = '';
+    if(bag.items.length === 0){
+      const empty = document.createElement('div');
+      empty.className = 'col-empty';
+      empty.textContent = 'The bag is empty. List something you actually want.';
+      host.appendChild(empty);
+    }
+    bag.items.forEach(item => {
+      const affordable = stats.balance >= item.price;
+      const editing = editingItemId === item.id;
+      const row = document.createElement('div');
+      row.className = 'item' + (affordable && !editing ? ' affordable' : '');
+      const buyAttrs = affordable ? '' : 'disabled style="opacity:0.4;cursor:not-allowed;"';
+
+      const priceCell = editing
+        ? `<input class="price-edit" type="number" min="1" step="1" value="${item.price}" data-price-input="${item.id}">`
+        : `<div class="item-price">${fmtCoins(item.price)} C</div>`;
+
+      const actions = editing
+        ? `<button class="sbtn clear" data-save="${item.id}">SAVE</button>
+           <button class="sbtn ghost" data-canceledit="${item.id}">✕</button>`
+        : `<button class="sbtn ${affordable ? 'clear' : ''}" data-buy="${item.id}" ${buyAttrs}>BUY</button>
+           <button class="sbtn" data-edit="${item.id}" title="Change price">✎</button>
+           <button class="sbtn ghost" data-remove="${item.id}" title="Delist">✕</button>`;
+
+      row.innerHTML = `
+        <div>
+          <div class="item-name">${escapeHtml(item.name)}</div>
+          ${priceCell}
+        </div>
+        <div class="item-actions">${actions}</div>`;
+
+      row.addEventListener('click', (ev) => {
+        const hit = (attr) => ev.target.closest(`[data-${attr}]`);
+        const buy = hit('buy'), rm = hit('remove'), ed = hit('edit'),
+              sv = hit('save'), cx = hit('canceledit');
+        if(buy) buyItem(buy.dataset.buy);
+        else if(ed){ editingItemId = ed.dataset.edit; renderBag(); }
+        else if(sv){
+          const input = document.querySelector(`[data-price-input="${sv.dataset.save}"]`);
+          savePrice(sv.dataset.save, input ? input.value : null);
+        }
+        else if(cx){ editingItemId = null; renderBag(); }
+        else if(rm) removeItem(rm.dataset.remove);
+      });
+
+      if(editing){
+        const input = row.querySelector('[data-price-input]');
+        input.addEventListener('keydown', (ev) => {
+          if(ev.key === 'Enter'){ ev.preventDefault(); savePrice(item.id, input.value); }
+          if(ev.key === 'Escape'){ editingItemId = null; renderBag(); }
+        });
+        setTimeout(() => { input.focus(); input.select(); }, 0);
+      }
+      host.appendChild(row);
+    });
+
+    const owned = document.getElementById('ownedList');
+    const recent = bag.purchases.slice().reverse().slice(0, 12);
+    owned.innerHTML = recent.length
+      ? recent.map(p => `<div class="owned-row"><b>${escapeHtml(p.name)}</b><span>${fmtCoins(p.price)} C</span></div>`).join('')
+      : '<div class="col-empty">Nothing claimed yet.</div>';
+  }
+
+  // ============================================================
+  // Ledger (money)
+  // ============================================================
+  const budgetOverlay = document.getElementById('budgetModalOverlay');
+  document.getElementById('logOpenBtn').addEventListener('click', () => budgetOverlay.classList.add('open'));
+  document.getElementById('budgetCancelBtn').addEventListener('click', closeBudgetModal);
+  budgetOverlay.addEventListener('click', (e) => { if(e.target === budgetOverlay) closeBudgetModal(); });
+  function closeBudgetModal(){
+    budgetOverlay.classList.remove('open');
+    document.getElementById('budgetForm').reset();
+  }
+  document.getElementById('budgetForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const amount = parseFloat(document.getElementById('bAmount').value);
+    const category = document.getElementById('bCategory').value;
+    if(isNaN(amount) || !CATEGORIES.some(c => c.key === category)) return;
+    applyBudgetRollover();
+    budgetData.categories[category] = (Number(budgetData.categories[category]) || 0) + amount;
+    budgetData.total = (Number(budgetData.total) || 0) + amount;
+    persist();
+    closeBudgetModal();
+    render();
+  });
+
+  function renderLedger(monthTotal){
+    if(!budgetData) return;
+    const cats = budgetData.categories || emptyCategories();
+    const total = Number(budgetData.total) || 0;
+    const overActive = total > BUDGET_GOAL;
+
+    document.getElementById('ledgerTotal').textContent = fmtMoney(total);
+
+    const bar = document.getElementById('ledgerBar');
+    bar.innerHTML = '';
+    const positiveSum = CATEGORIES.reduce((s,c) => s + Math.max(0, Number(cats[c.key]) || 0), 0);
+    const fillFraction = overActive ? 1 : Math.max(0, Math.min(1, total / BUDGET_GOAL));
+    if(positiveSum > 0){
+      CATEGORIES.forEach(c => {
+        const val = Math.max(0, Number(cats[c.key]) || 0);
+        if(val <= 0) return;
+        const seg = document.createElement('div');
+        seg.className = 'ledger-seg';
+        seg.style.width = ((val / positiveSum) * fillFraction * 100) + '%';
+        seg.style.background = c.color;
+        seg.title = `${c.label}: ${fmtMoney(val)}`;
+        bar.appendChild(seg);
+      });
+    }
+
+    document.getElementById('ledgerLegend').innerHTML = CATEGORIES.map(c => {
+      const val = Number(cats[c.key]) || 0;
+      return `<span><i class="swatch" style="background:${c.color}"></i>${c.label} ${fmtMoney(val)}</span>`;
+    }).join('');
+
+    // Overage protocol, same maths as before: the dollar overage scaled down
+    // by 40, compared against the hours logged past 90.
+    const state = document.getElementById('ledgerState');
+    if(overActive){
+      const overageNumberValue = (total - BUDGET_GOAL) / 40;
+      const hoursOverage = monthTotal > GOAL ? monthTotal - GOAL : 0;
+      const safe = overageNumberValue <= hoursOverage;
+      state.className = safe ? 'safe' : 'over';
+      state.textContent = safe
+        ? `Overage ${truncNum(overageNumberValue)} · covered by ${truncNum(hoursOverage)} extra hours`
+        : `Overage ${truncNum(overageNumberValue)} · not yet covered`;
+    } else {
+      state.className = '';
+      state.textContent = `${fmtMoney(BUDGET_GOAL - total)} of headroom left`;
+    }
+  }
+
+  // ============================================================
+  // Map + render
+  // ============================================================
+  function renderMap(scn, monthTotal, finished){
+    const rail = document.getElementById('mapRail');
+    rail.querySelectorAll('.node, .node-label').forEach(el => el.remove());
+
+    const nodes = scn.nodes;
+    const step = GOAL / nodes.length;
+    const left = 5, right = 95;
+    const span = right - left;
+    const frac = Math.max(0, Math.min(1, monthTotal / GOAL));
+
+    nodes.forEach((label, i) => {
+      const at = left + span * ((i + 1) / nodes.length);
+      const threshold = step * (i + 1);
+      const reached = monthTotal >= threshold;
+
+      const dot = document.createElement('div');
+      dot.className = 'node' + (reached ? ' reached' : '') + (i === nodes.length - 1 ? ' final' : '');
+      dot.style.left = at + '%';
+      rail.appendChild(dot);
+
+      const cap = document.createElement('div');
+      cap.className = 'node-label' + (reached ? ' reached' : '');
+      cap.style.left = at + '%';
+      cap.innerHTML = `${escapeHtml(label)}<span class="h">${Math.round(threshold)}h</span>`;
+      rail.appendChild(cap);
+    });
+
+    document.getElementById('mapFill').style.width = (span * frac) + '%';
+    const pos = (left + span * frac) + '%';
+    document.getElementById('avatar').style.left = pos;
+    document.getElementById('avatarName').style.left = pos;
+    document.getElementById('avatar').textContent = finished ? '👑' : (frac >= 1 ? '🏴' : '📖');
+  }
+
+  function renderTitles(stats){
+    const grid = document.getElementById('titleGrid');
+    grid.innerHTML = '';
+    let earned = 0;
+    TITLES.forEach(t => {
+      const got = t.test(stats);
+      if(got) earned++;
+      const el = document.createElement('div');
+      el.className = 'title-card' + (got ? ' earned' : '');
+      el.innerHTML = `<div class="t-name">${got ? escapeHtml(t.name) : '???'}</div><div class="t-desc">${escapeHtml(t.desc)}</div>`;
+      grid.appendChild(el);
+    });
+    document.getElementById('titleSub').textContent =
+      earned === TITLES.length ? `All ${TITLES.length} acquired.` : `${earned} of ${TITLES.length} acquired`;
+  }
+
   function computeYearlyWeeklyAvg(all){
     const yearEntries = all.filter(e => new Date(e.date + 'T00:00:00').getFullYear() === curYear);
     if(yearEntries.length === 0) return 0;
-
     let minDate = null, maxDate = null;
     yearEntries.forEach(e => {
       const d = new Date(e.date + 'T00:00:00');
       if(!minDate || d < minDate) minDate = d;
       if(!maxDate || d > maxDate) maxDate = d;
     });
-
-    const firstWeekStart = startOfWeek(minDate);
-    const lastWeekStart = startOfWeek(maxDate);
     const msPerWeek = 7 * 24 * 60 * 60 * 1000;
-    const weekSpan = Math.round((lastWeekStart - firstWeekStart) / msPerWeek) + 1;
-
-    const totalHours = yearEntries.reduce((s,e) => s + Number(e.hours), 0);
-    return totalHours / weekSpan;
-  }
-
-  // Draws colored category segments onto a ring's <svg>. fillFraction is
-  // how much of the full circle to use (1 = completely filled). Segments
-  // are sized proportionally to each category's positive share of the
-  // total; categories at or below $0 don't get a visible segment.
-  function paintRing(svgId, categories, fillFraction, radius){
-    const svg = document.getElementById(svgId);
-    if(!svg) return;
-    svg.querySelectorAll('.ring-segment').forEach(el => el.remove());
-
-    const circumference = 2 * Math.PI * radius;
-    const positiveSum = CATEGORIES.reduce((s,c) => s + Math.max(0, Number(categories[c.key]) || 0), 0);
-    if(positiveSum <= 0) return;
-
-    let cumulative = 0;
-    CATEGORIES.forEach(c => {
-      const val = Math.max(0, Number(categories[c.key]) || 0);
-      if(val <= 0) return;
-      const share = (val / positiveSum) * fillFraction;
-      const segLen = share * circumference;
-      const seg = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-      seg.setAttribute('class', 'ring-segment');
-      seg.setAttribute('cx', '100');
-      seg.setAttribute('cy', '100');
-      seg.setAttribute('r', String(radius));
-      seg.setAttribute('stroke', c.color);
-      seg.setAttribute('stroke-dasharray', `${segLen} ${circumference - segLen}`);
-      seg.setAttribute('stroke-dashoffset', String(-cumulative));
-      svg.appendChild(seg);
-      cumulative += segLen;
-    });
-  }
-
-  function renderBudget(monthTotal){
-    if(!budgetData) return;
-    const cats = budgetData.categories || emptyCategories();
-    const total = Number(budgetData.total) || 0;
-    const overActive = total > BUDGET_GOAL;
-
-    const budgetRingSvg = document.getElementById('budgetRingSvg');
-    const overageHolder = document.getElementById('overageHolder');
-    const overageFill = document.getElementById('overageFill');
-    const overageNumber = document.getElementById('overageNumber');
-
-    if(overActive){
-      // Overage Protocol: hide the ring around the main circle, show a
-      // second circle with its own full ring (proportioned by category
-      // share of the actual total, no longer capped at $3,600).
-      budgetRingSvg.style.display = 'none';
-      overageHolder.style.display = 'flex';
-      paintRing('overageRingSvg', cats, 1, BUDGET_RING_R);
-
-      // Visual-only "overage number": the dollar overage scaled down by 40.
-      // The real dollar figures (in `entries`/`budgetData`) are untouched.
-      const rawOverage = total - BUDGET_GOAL;
-      const overageNumberValue = rawOverage / 40;
-      overageNumber.textContent = truncNum(overageNumberValue);
-
-      const hoursOverage = monthTotal > GOAL ? monthTotal - GOAL : 0;
-      overageFill.classList.toggle('overage-safe', overageNumberValue <= hoursOverage);
-    } else {
-      budgetRingSvg.style.display = '';
-      overageHolder.style.display = 'none';
-      overageFill.classList.remove('overage-safe');
-      const frac = Math.max(0, Math.min(1, total / BUDGET_GOAL));
-      paintRing('budgetRingSvg', cats, frac, BUDGET_RING_R);
-    }
+    const weekSpan = Math.round((startOfWeek(maxDate) - startOfWeek(minDate)) / msPerWeek) + 1;
+    return yearEntries.reduce((s,e) => s + Number(e.hours), 0) / weekSpan;
   }
 
   function render(){
-    const all = entries;
+    const all = allEntries();
+    syncSeq();
     const monthEntries = entriesForCurrentMonth(all);
-    const monthTotal = monthEntries.reduce((s,e) => s + Number(e.hours), 0);
+    const monthTotal = totalHoursOf(monthEntries);
+    const stats = gameStats(all);
+    const { scenario, index, finished } = currentScenario(all);
 
-    renderBudget(monthTotal);
+    renderLedger(monthTotal);
 
-    // ---- Circle ----
-    const circleFill = document.getElementById('circleFill');
-    const circleNumber = document.getElementById('circleNumber');
-    const circleCaption = document.getElementById('circleCaption');
-    const ring = document.getElementById('ringProgress');
-    ring.style.strokeDasharray = `${RING_CIRC}`;
+    // Membership
+    document.getElementById('memberChip').textContent = `MEMBERSHIP LV ${stats.level}`;
+    document.getElementById('memberTitle').textContent = memberTitle(stats.level);
+    document.getElementById('memberXp').textContent =
+      `${fmtCoins(stats.levelInto)} / ${fmtCoins(stats.levelNeed)} BAG XP`;
+    document.getElementById('xpFill').style.width = Math.min(100, (stats.levelInto / stats.levelNeed) * 100) + '%';
 
-    const isOver = monthTotal >= GOAL;
-    if(isOver){
-      circleFill.classList.add('over-goal');
-      const overage = monthTotal - GOAL;
-      circleNumber.textContent = truncNum(overage);
-      circleCaption.textContent = 'Good job!';
-      circleCaption.classList.remove('hidden');
-      ring.style.stroke = 'var(--dandelion-deep)';
-      ring.style.strokeDashoffset = 0;
-    } else {
-      circleFill.classList.remove('over-goal');
-      const remaining = GOAL - monthTotal;
-      circleNumber.textContent = truncNum(remaining);
-      circleCaption.textContent = '';
-      circleCaption.classList.add('hidden');
-      ring.style.stroke = 'var(--skyblue-deep)';
-      const frac = Math.min(1, monthTotal / GOAL);
-      ring.style.strokeDashoffset = RING_CIRC * (1 - frac);
-    }
+    // Main scenario window
+    const cleared = monthTotal >= GOAL;
+    document.getElementById('scnTag').textContent = `MAIN SCENARIO #${scenario.no}`;
+    document.getElementById('scnName').textContent = scenario.name;
+    document.getElementById('scnDiff').textContent = scenario.diff;
+    document.getElementById('scnChapter').textContent = `${index + 1} / ${MAIN_SCENARIOS.length}`;
+    document.getElementById('scnCondition').textContent = scenario.cond;
+    document.getElementById('scnReward').textContent = scenario.reward;
+    document.getElementById('scnFlavor').textContent = scenario.flavor;
+    document.getElementById('scenarioWin').classList.toggle('scn-cleared', cleared);
 
-    // ---- Confetti calendar background when over goal ----
-    document.querySelector('.calendar-section').classList.toggle('confetti-bg', isOver);
+    const lastDay = new Date(curYear, curMonth + 1, 0).getDate();
+    const daysLeft = lastDay - now.getDate();
+    document.getElementById('scnLimit').textContent =
+      daysLeft <= 0 ? 'today — the month ends tonight' : `${daysLeft} day${daysLeft === 1 ? '' : 's'} remaining`;
 
-    // ---- Weekly widgets ----
-    const weekStart = startOfWeek(now);
-    const weekEnd = endOfWeek(now);
+    document.getElementById('hoursDone').textContent = truncNum(monthTotal);
+    const remaining = Math.max(0, GOAL - monthTotal);
+    document.getElementById('progressLine').textContent = cleared
+      ? `Cleared. ${truncNum(monthTotal - GOAL)} hours past the condition — the next scenario opens next month.`
+      : `${fmtDuration(remaining)} left. Fail and Main Scenario #${scenario.no} repeats.`;
+
+    document.getElementById('readerLine').textContent = finished
+      ? 'Incarnation: Kim Dokja · the final chapter has been read'
+      : `Incarnation: Kim Dokja · ${MAIN_SCENARIOS.length - (index + 1)} main scenarios to the final chapter`;
+
+    renderMap(scenario, monthTotal, finished);
+
+    const strip = document.getElementById('chapterStrip');
+    strip.innerHTML = '';
+    MAIN_SCENARIOS.forEach((s, i) => {
+      const pip = document.createElement('div');
+      pip.className = 'chapter-pip' + (i < index ? ' done' : (i === index ? ' now' : ''));
+      pip.title = `#${s.no} ${s.name}`;
+      strip.appendChild(pip);
+    });
+
+    // Stats
+    document.getElementById('streakValue').textContent = String(stats.weekStreak);
+    const weekStart = startOfWeek(now), weekEnd = endOfWeek(now);
     const weekTotal = all.reduce((s,e) => {
       const d = new Date(e.date + 'T00:00:00');
       return (d >= weekStart && d <= weekEnd) ? s + Number(e.hours) : s;
     }, 0);
-    const weekValue = document.getElementById('weekValue');
-    const weekWidget = document.getElementById('weekWidget');
-    weekValue.textContent = `${truncNum(weekTotal)}h`;
-    weekWidget.classList.toggle('alert', weekTotal > 29);
+    document.getElementById('weekValue').textContent = `${truncNum(weekTotal)}h`;
+    document.getElementById('weekNote').textContent = weekTotal > WEEK_STREAK_HOURS
+      ? 'streak secured this week'
+      : `${fmtDuration(Math.max(0, WEEK_STREAK_HOURS - weekTotal))} more to hold the streak`;
+    document.getElementById('weekStat').classList.toggle('alert', weekTotal > 29);
 
     const avgWeekly = computeYearlyWeeklyAvg(all);
-    const avgValue = document.getElementById('avgValue');
-    const avgWidget = document.getElementById('avgWidget');
-    avgValue.textContent = `${truncNum(avgWeekly)}h`;
-    avgWidget.classList.toggle('alert', avgWeekly > 29);
+    document.getElementById('avgValue').textContent = `${truncNum(avgWeekly)}h`;
+    document.getElementById('avgStat').classList.toggle('alert', avgWeekly > 29);
 
-    // ---- Calendar ----
+    // Board subtitle
+    const openCount = tasks.filter(t => t.list === 'available').length;
+    const todayHours = totalHoursOf(all.filter(e => e.date === dateKey(new Date())));
+    const sub = document.getElementById('boardSub');
+    if(todayHours > 0){
+      sub.textContent = `${fmtDuration(todayHours)} cleared today. Drag between the panels to reorder the queue.`;
+    } else if(openCount > 0){
+      sub.textContent = `${openCount} sub-scenario${openCount === 1 ? '' : 's'} available. Start the clock on one.`;
+    } else {
+      sub.textContent = 'Not numbered by the Star Stream — numbered by you. Drag between the two panels.';
+    }
+
+    renderBag();
+    renderTitles(stats);
+    renderBoard();
     buildCalendar(monthEntries);
   }
 
   function buildCalendar(monthEntries){
     const grid = document.getElementById('calGrid');
     grid.innerHTML = '';
-
-    const dows = ['S','M','T','W','T','F','S'];
-    dows.forEach(d => {
+    ['S','M','T','W','T','F','S'].forEach(d => {
       const el = document.createElement('div');
       el.className = 'cal-dow';
       el.textContent = d;
       grid.appendChild(el);
     });
 
-    // aggregate entries by day-of-month
     const byDay = {};
     monthEntries.forEach(e => {
-      const d = new Date(e.date + 'T00:00:00');
-      const day = d.getDate();
+      const day = new Date(e.date + 'T00:00:00').getDate();
       if(!byDay[day]) byDay[day] = { hours: 0, descs: [] };
       byDay[day].hours += Number(e.hours);
-      byDay[day].descs.push(e.description);
+      const no = Number(e.scenarioNo) || 0;
+      byDay[day].descs.push(no ? `#${no} ${e.description}` : e.description);
     });
 
     const firstDay = new Date(curYear, curMonth, 1).getDay();
     const daysInMonth = new Date(curYear, curMonth + 1, 0).getDate();
     const todayDate = now.getDate();
-    const isCurrentRealMonth = (curYear === new Date().getFullYear() && curMonth === new Date().getMonth());
-
     const maxHours = Math.max(1, ...Object.values(byDay).map(v => v.hours));
 
     for(let i=0; i<firstDay; i++){
@@ -1090,21 +2628,19 @@
       el.className = 'cal-cell empty';
       grid.appendChild(el);
     }
-
     for(let day=1; day<=daysInMonth; day++){
       const cell = document.createElement('div');
       cell.className = 'cal-cell';
       cell.textContent = day;
-      if(isCurrentRealMonth && day === todayDate) cell.classList.add('today');
+      if(day === todayDate) cell.classList.add('today');
 
       const info = byDay[day];
       if(info){
         cell.classList.add('logged');
         const intensity = Math.min(1, info.hours / Math.max(maxHours, 8));
-        const lightness = 88 - Math.round(intensity * 48); // 88% (light) down to ~40%
-        cell.style.background = `hsl(155, 45%, ${lightness}%)`;
-        if(lightness < 55) cell.style.color = '#EAF7F1';
-
+        cell.style.background = `rgba(104,224,172,${0.12 + intensity * 0.55})`;
+        cell.style.borderColor = 'rgba(104,224,172,0.5)';
+        cell.style.color = intensity > 0.5 ? '#05150F' : '#BDF3DA';
         cell.addEventListener('mouseenter', (ev) => showTooltip(ev, info));
         cell.addEventListener('mousemove', positionTooltip);
         cell.addEventListener('mouseleave', hideTooltip);
@@ -1120,167 +2656,139 @@
 
   const tooltip = document.getElementById('tooltip');
   function showTooltip(ev, info){
-    document.getElementById('ttHours').textContent = `${truncNum(info.hours)} hours logged`;
+    document.getElementById('ttHours').textContent = `${fmtDuration(info.hours)} cleared`;
     document.getElementById('ttDesc').textContent = info.descs.join(' · ');
     tooltip.classList.add('show');
     positionTooltip(ev);
   }
   function positionTooltip(ev){
-    const x = ev.clientX;
-    const y = ev.clientY;
-    const ttW = 220;
-    let left = x + 14;
-    if(left + ttW > window.innerWidth - 10) left = x - ttW - 14;
+    const ttW = 240;
+    let left = ev.clientX + 14;
+    if(left + ttW > window.innerWidth - 10) left = ev.clientX - ttW - 14;
     tooltip.style.left = left + 'px';
-    tooltip.style.top = (y + 14) + 'px';
+    tooltip.style.top = (ev.clientY + 14) + 'px';
   }
-  function hideTooltip(){
-    tooltip.classList.remove('show');
-  }
+  function hideTooltip(){ tooltip.classList.remove('show'); }
 
-  // ---- Modal (hours) ----
-  const overlay = document.getElementById('modalOverlay');
-  document.getElementById('circleFill').addEventListener('click', () => {
-    overlay.classList.add('open');
-  });
-  document.getElementById('cancelBtn').addEventListener('click', closeModal);
-  overlay.addEventListener('click', (e) => { if(e.target === overlay) closeModal(); });
-  function closeModal(){
-    overlay.classList.remove('open');
-    document.getElementById('logForm').reset();
-    document.getElementById('fDate').value = dateKey(new Date());
-  }
-
-  document.getElementById('logForm').addEventListener('submit', (e) => {
-    e.preventDefault();
-    const date = document.getElementById('fDate').value;
-    const hours = parseFloat(document.getElementById('fHours').value);
-    const description = document.getElementById('fDesc').value.trim();
-    if(!date || isNaN(hours) || hours <= 0 || !description) return;
-
-    const updated = entries.slice();
-    updated.push({
-      id: Date.now() + '-' + Math.random().toString(36).slice(2,8),
-      date, hours, description,
-      loggedAt: new Date().toISOString()
-    });
-    entries = updated;
-    persist();
-    closeModal();
-    render();
-
-    const circleFill = document.getElementById('circleFill');
-    circleFill.classList.add('circle-pop');
-    setTimeout(() => circleFill.classList.remove('circle-pop'), 460);
-  });
-
-  // ---- Modal (money / budget) ----
-  const budgetOverlay = document.getElementById('budgetModalOverlay');
-  document.getElementById('logOpenBtn').addEventListener('click', () => {
-    budgetOverlay.classList.add('open');
-  });
-  document.getElementById('budgetCancelBtn').addEventListener('click', closeBudgetModal);
-  budgetOverlay.addEventListener('click', (e) => { if(e.target === budgetOverlay) closeBudgetModal(); });
-  function closeBudgetModal(){
-    budgetOverlay.classList.remove('open');
-    document.getElementById('budgetForm').reset();
-  }
-
-  document.getElementById('budgetForm').addEventListener('submit', (e) => {
-    e.preventDefault();
-    const amount = parseFloat(document.getElementById('bAmount').value);
-    const category = document.getElementById('bCategory').value;
-    if(isNaN(amount) || !CATEGORIES.some(c => c.key === category)) return;
-
-    applyBudgetRollover(); // in case the month turned over since page load
-    budgetData.categories[category] = (Number(budgetData.categories[category]) || 0) + amount;
-    budgetData.total = (Number(budgetData.total) || 0) + amount;
-    persist();
-    closeBudgetModal();
-    render();
-  });
-
-  // ---- Confetti ----
-  const confettiColors = ['#FFD166','#FF8577','#AEE6D3','#AAD4F5','#FFD6E8','#C9B6F2'];
+  // ---- confetti ----
+  const confettiColors = ['#F2C14E','#7FE6F5','#68E0AC','#A98BFF','#FFD86B','#FFFFFF'];
   function spawnConfetti(){
     const layer = document.getElementById('confettiLayer');
-    const circleFillEl = document.getElementById('circleFill');
-    if(!layer || !circleFillEl) return;
-    const rect = circleFillEl.getBoundingClientRect();
+    const anchor = document.getElementById('scenarioWin');
+    if(!layer || !anchor) return;
+    const rect = anchor.getBoundingClientRect();
     const originX = rect.left + rect.width / 2;
-    const originY = rect.top + rect.height / 2;
-    const spreadX = window.innerWidth * 0.46;
-    const spreadY = window.innerHeight * 0.42;
+    const originY = Math.max(80, Math.min(rect.top + rect.height / 2, window.innerHeight - 100));
+    const spreadX = window.innerWidth * 0.44;
+    const spreadY = window.innerHeight * 0.4;
 
-    for(let i=0; i<90; i++){
+    for(let i=0; i<80; i++){
       const piece = document.createElement('span');
       piece.className = 'confetti-piece';
       const angle = Math.random() * Math.PI * 2;
-      const reach = 0.45 + Math.random() * 0.65; // vary how far each piece travels
-      const tx = Math.cos(angle) * spreadX * reach;
-      const ty = Math.sin(angle) * spreadY * reach - spreadY * 0.15;
-      const rot = Math.round(Math.random() * 900 - 450);
+      const reach = 0.45 + Math.random() * 0.65;
       piece.style.left = originX + 'px';
       piece.style.top = originY + 'px';
-      piece.style.setProperty('--tx', tx + 'px');
-      piece.style.setProperty('--ty', ty + 'px');
-      piece.style.setProperty('--rot', rot + 'deg');
+      piece.style.setProperty('--tx', (Math.cos(angle) * spreadX * reach) + 'px');
+      piece.style.setProperty('--ty', (Math.sin(angle) * spreadY * reach - spreadY * 0.12) + 'px');
+      piece.style.setProperty('--rot', Math.round(Math.random() * 900 - 450) + 'deg');
       piece.style.background = confettiColors[Math.floor(Math.random() * confettiColors.length)];
-      piece.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+      piece.style.borderRadius = Math.random() > 0.5 ? '50%' : '0';
       piece.style.animationDelay = Math.round(Math.random() * 140) + 'ms';
       layer.appendChild(piece);
-      setTimeout(() => piece.remove(), 1550);
+      setTimeout(() => piece.remove(), 1650);
     }
   }
-  document.getElementById('circleFill').addEventListener('mouseenter', () => {
-    if(document.getElementById('circleFill').classList.contains('over-goal')){
-      spawnConfetti();
-    }
-  });
 
-  // ---- Cloud sync init ----
+  function setSyncBadge(){
+    const badge = document.getElementById('syncBadge');
+    const hint = document.getElementById('syncHint');
+    if(!badge) return;
+    if(cloudEnabled){
+      badge.textContent = 'SYNCED ACROSS DEVICES';
+      hint.textContent = '';
+    } else {
+      badge.textContent = 'SAVED ON THIS DEVICE ONLY';
+      hint.textContent = 'Add a Firebase config in the code to sync across devices.';
+    }
+  }
+
+  // ---- cloud sync ----
+  function loadLocalAll(){
+    entries = readLocal();
+    pending = readLocalPending();
+    tasks = readLocalTasks();
+    bag = readLocalBag();
+    seq = readLocalSeq();
+  }
+
+  // ---- Firebase app (shared by Auth and Firestore — initialize exactly once) ----
+  let firebaseApp = null;
+  async function ensureFirebaseApp(){
+    if(firebaseApp) return firebaseApp;
+    const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js");
+    firebaseApp = initializeApp(firebaseConfig);
+    return firebaseApp;
+  }
+
   async function initSync(){
     const configured = !!(firebaseConfig.apiKey && firebaseConfig.projectId);
     if(configured){
       try{
-        const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js");
+        const app = await ensureFirebaseApp();
         const { getFirestore, doc, onSnapshot, setDoc } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js");
-        const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         const docRef = doc(db, "hourTracker", SYNC_KEY);
 
         cloudEnabled = true;
         persist = async () => {
-          writeLocal(entries);
-          writeLocalBudget(budgetData);
-          writeLocalBudgetArchive(budgetArchive);
+          writeLocal(entries); writeLocalPending(pending); writeLocalTasks(tasks); writeLocalBag(bag);
+          writeLocalSeq(seq); writeLocalBudget(budgetData); writeLocalBudgetArchive(budgetArchive);
           try{
-            await setDoc(docRef, { entries, budget: budgetData, budgetArchive, updatedAt: Date.now() });
+            await setDoc(docRef, { entries, pending, tasks, bag, seq, budget: budgetData, budgetArchive, updatedAt: Date.now() });
           }catch(e){
             console.error('Cloud save failed, changes are saved locally only for now.', e);
           }
         };
 
-        // Prime instantly from local cache, then listen for live updates.
-        entries = mergedLocal();
+        loadLocalAll();
         budgetData = readLocalBudget();
         budgetArchive = readLocalBudgetArchive();
-        if(applyBudgetRollover()) persist();
+        const rolledUp = applyBudgetRollover();
+        const settledUp = settleStalePending();
+        if(rolledUp || settledUp) persist();
         render();
         setSyncBadge();
 
-        onSnapshot(docRef, snap => {
+        stopSync = onSnapshot(docRef, snap => {
           const data = snap.exists() ? snap.data() : null;
-          const cloudEntries = (data && Array.isArray(data.entries)) ? data.entries : [];
-          entries = cloudEntries;
+          entries = (data && Array.isArray(data.entries)) ? data.entries : [];
+
+          // The archive page writes without these fields; fall back to local
+          // copies rather than losing the board, the bag or an open episode.
+          let repair = false;
+          if(data && Array.isArray(data.pending)){ pending = data.pending; }
+          else { pending = readLocalPending(); repair = repair || pending.length > 0; }
+          if(data && Array.isArray(data.tasks)){ tasks = data.tasks.map(normalizeTask); }
+          else { tasks = readLocalTasks(); repair = repair || tasks.length > 0; }
+
+          if(data && data.bag){ bag = normalizeBag(data.bag); }
+          else { bag = readLocalBag(); repair = repair || (bag.items.length + bag.purchases.length) > 0; }
+
+          const cloudSeq = Number(data && data.seq);
+          seq = Math.max(Number.isFinite(cloudSeq) ? cloudSeq : 1, readLocalSeq());
+
           budgetData = (data && data.budget) ? data.budget : { month: currentMonthKey(), categories: emptyCategories(), total: 0 };
           budgetArchive = (data && data.budgetArchive) ? data.budgetArchive : {};
-          writeLocal(cloudEntries);
-          writeLocalBudget(budgetData);
-          writeLocalBudgetArchive(budgetArchive);
+
+          writeLocal(entries); writeLocalPending(pending); writeLocalTasks(tasks);
+          writeLocalBag(bag); writeLocalSeq(seq);
+          writeLocalBudget(budgetData); writeLocalBudgetArchive(budgetArchive);
+
           const rolled = applyBudgetRollover();
+          const settled = settleStalePending();
           render();
-          if(rolled) persist();
+          if(rolled || repair || settled) persist();
         }, err => {
           console.error('Firestore sync error, using local data.', err);
         });
@@ -1289,59 +2797,101 @@
         console.error('Firebase init failed, falling back to local storage only.', e);
       }
     }
-    // Local-only fallback (no config, or Firebase failed to load)
     cloudEnabled = false;
-    entries = mergedLocal();
+    loadLocalAll();
     budgetData = readLocalBudget();
     budgetArchive = readLocalBudgetArchive();
-    if(applyBudgetRollover()) persist();
+    const rolledLocal = applyBudgetRollover();
+    const settledLocal = settleStalePending();
+    if(rolledLocal || settledLocal) persist();
     render();
     setSyncBadge();
   }
 
-  // ---- Lock screen ----
-  // Change this to your own 5-digit code.
-  const ACCESS_CODE = '83364';
-  const UNLOCK_KEY = 'hourTrackerUnlocked_v1';
+  // ---- Authentication (Firebase Auth, email + password) ----
+  let authInstance = null;
+  let stopSync = null;
+  let syncStarted = false;
 
   function showLock(){
     document.body.classList.add('app-locked');
     document.getElementById('lockOverlay').classList.add('show');
-    const input = document.getElementById('lockInput');
-    input.value = '';
-    setTimeout(() => input.focus(), 50);
+    setTimeout(() => document.getElementById('lockEmail').focus(), 50);
   }
   function hideLock(){
     document.body.classList.remove('app-locked');
     document.getElementById('lockOverlay').classList.remove('show');
   }
-  function attemptUnlock(){
-    const input = document.getElementById('lockInput');
-    const err = document.getElementById('lockError');
-    if(input.value.trim() === ACCESS_CODE){
-      sessionStorage.setItem(UNLOCK_KEY, '1');
-      err.textContent = '';
+
+  async function initAuth(){
+    const configured = !!(firebaseConfig.apiKey && firebaseConfig.projectId);
+    if(!configured){
+      // No Firebase project configured — run local-only, no lock.
       hideLock();
       initSync();
-    } else {
-      err.textContent = 'Incorrect code';
-      input.value = '';
-      input.classList.remove('shake');
-      void input.offsetWidth; // restart animation
-      input.classList.add('shake');
-      input.focus();
+      return;
+    }
+    try{
+      const app = await ensureFirebaseApp();
+      const {
+        getAuth, onAuthStateChanged, signInWithEmailAndPassword,
+        signOut, setPersistence, browserLocalPersistence
+      } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js");
+
+      authInstance = getAuth(app);
+      await setPersistence(authInstance, browserLocalPersistence);
+
+      onAuthStateChanged(authInstance, (user) => {
+        if(user){
+          hideLock();
+          if(!syncStarted){ syncStarted = true; initSync(); }
+        } else {
+          syncStarted = false;
+          if(stopSync){ stopSync(); stopSync = null; }
+          showLock();
+        }
+      });
+
+      document.getElementById('lockForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const email = document.getElementById('lockEmail').value.trim();
+        const password = document.getElementById('lockPassword').value;
+        const err = document.getElementById('lockError');
+        const btn = document.getElementById('lockSubmitBtn');
+        btn.disabled = true;
+        const originalLabel = btn.textContent;
+        btn.textContent = 'CONNECTING…';
+        try{
+          await signInWithEmailAndPassword(authInstance, email, password);
+          err.textContent = '';
+          setTimeout(() => systemMsg('The free service has been terminated. Scenario tracking begins.'), 500);
+        }catch(ex){
+          console.error('Sign-in failed', ex);
+          err.textContent = 'Authentication failed';
+          const pw = document.getElementById('lockPassword');
+          pw.value = '';
+          pw.classList.remove('shake');
+          void pw.offsetWidth;
+          pw.classList.add('shake');
+          pw.focus();
+        } finally {
+          btn.disabled = false;
+          btn.textContent = originalLabel;
+        }
+      });
+
+      const signOutBtn = document.getElementById('signOutBtn');
+      if(signOutBtn){
+        signOutBtn.addEventListener('click', () => { signOut(authInstance); });
+      }
+    }catch(e){
+      console.error('Firebase Auth failed to load; running local-only for this session.', e);
+      hideLock();
+      initSync();
     }
   }
-  document.getElementById('lockForm').addEventListener('submit', (e) => {
-    e.preventDefault();
-    attemptUnlock();
-  });
 
-  if(sessionStorage.getItem(UNLOCK_KEY) === '1'){
-    initSync();
-  } else {
-    showLock();
-  }
+  initAuth();
 </script>
 </body>
 </html>

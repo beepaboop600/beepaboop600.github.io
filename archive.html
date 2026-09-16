@@ -3,353 +3,346 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Archive · Hours Tracker</title>
+<title>Archive · Ways of Survival</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Chakra+Petch:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root{
-    --cream:#FBF6ED;
-    --panel:#FFFFFF;
-    --lavender:#F0EAFB;
-    --lavender-line:#E4DAF7;
-    --dandelion:#FFD166;
-    --dandelion-deep:#F5B93F;
-    --mint:#AEE6D3;
-    --mint-deep:#7FCDBB;
-    --coral-bg:#FFE3E0;
-    --pink:#FFD6E8;
-    --plum:#4A3F55;
-    --plum-soft:#8B7F99;
-    --row-a: #FBF6ED;
-    --row-b: #F3F8F6;
-    --shadow: 0 10px 30px rgba(74,63,85,0.12);
-    --radius-lg: 26px;
+    --void:#06060F;
+    --panel:rgba(16,19,38,0.86);
+    --panel-solid:#101326;
+    --sys:#7FE6F5;
+    --sys-dim:rgba(127,230,245,0.30);
+    --sys-faint:rgba(127,230,245,0.10);
+    --gold:#F2C14E;
+    --gold-dim:rgba(242,193,78,0.35);
+    --jade:#68E0AC;
+    --scarlet:#FF5C6E;
+    --violet:#A98BFF;
+    --ink:#E9EDFF;
+    --muted:#8C95C4;
+    --radius:4px;
   }
   *{box-sizing:border-box;}
   body{
     margin:0;
     min-height:100vh;
     background:
-      radial-gradient(circle at 8% 10%, #FFF1DA 0%, transparent 40%),
-      radial-gradient(circle at 92% 6%, #E7F7F1 0%, transparent 38%),
-      radial-gradient(circle at 85% 92%, #F5E9FF 0%, transparent 42%),
-      var(--cream);
-    font-family:'Quicksand', sans-serif;
-    color: var(--plum);
-    padding: 18px 16px 60px;
+      radial-gradient(ellipse 60% 40% at 18% 8%, rgba(127,230,245,0.11) 0%, transparent 60%),
+      radial-gradient(ellipse 55% 45% at 88% 16%, rgba(169,139,255,0.13) 0%, transparent 62%),
+      radial-gradient(ellipse 70% 40% at 45% 58%, rgba(93,110,210,0.10) 0%, transparent 65%),
+      radial-gradient(ellipse 60% 35% at 60% 100%, rgba(242,193,78,0.07) 0%, transparent 60%),
+      var(--void);
+    background-attachment: fixed;
+    font-family:'Chakra Petch', sans-serif;
+    color: var(--ink);
+    padding: 20px 16px 70px;
+    font-size: 15px;
   }
-  .wrap{ max-width: 820px; margin: 0 auto; }
+
+  /* constellation sky */
+  .sky{ position:fixed; inset:0; z-index:0; pointer-events:none; overflow:hidden; }
+  .sky svg{ width:100%; height:100%; display:block; }
+  .sky .star{ fill:#FFFFFF; }
+  .sky .twinkle{ animation: twinkle 4s ease-in-out infinite; }
+  @keyframes twinkle{
+    0%,100%{ opacity: var(--o, 0.6); }
+    50%{ opacity: calc(var(--o, 0.6) * 0.25); }
+  }
+  .sky .c-line{ stroke: rgba(127,230,245,0.30); stroke-width:0.9; fill:none; }
+  .sky .c-star{ fill:#DCF4FF; filter: drop-shadow(0 0 4px rgba(127,230,245,0.9)); }
+  .sky .c-star.bright{ fill:#FFF3D0; filter: drop-shadow(0 0 7px rgba(242,193,78,0.85)); }
+  .sky .c-name{
+    fill: rgba(127,230,245,0.30);
+    font-family:'Cinzel', serif;
+    font-size: 9px;
+    letter-spacing: 0.22em;
+  }
+
+  .wrap{ max-width: 860px; margin: 0 auto; position:relative; z-index:1; }
 
   .top-row{
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    gap: 12px;
-    margin-bottom: 22px;
+    display:flex; align-items:center; justify-content:space-between;
+    gap: 12px; margin-bottom: 8px;
   }
   .back-btn{
     text-decoration:none;
-    font-weight:700;
-    font-size: 14px;
-    color: var(--plum);
-    background: var(--lavender);
-    border: 2px solid var(--lavender-line);
+    font-weight:600; font-size: 12.5px; letter-spacing: 0.14em;
+    color: var(--sys);
+    background: rgba(127,230,245,0.06);
+    border: 1px solid var(--sys-dim);
     padding: 10px 18px;
-    border-radius: 999px;
+    border-radius: var(--radius);
     white-space:nowrap;
-    transition: transform 0.2s ease, background 0.2s ease;
+    transition: background 0.2s ease;
   }
-  .back-btn:hover{ background:#E5DBFB; transform: translateY(-2px); }
+  .back-btn:hover{ background: rgba(127,230,245,0.18); }
 
   h1{
-    font-family:'Baloo 2', sans-serif;
-    font-size: clamp(22px, 5vw, 28px);
+    font-family:'Cinzel', serif;
+    font-weight:700;
+    font-size: clamp(20px, 4.6vw, 30px);
+    letter-spacing: 0.04em;
     margin: 0;
     text-align:center;
     flex:1;
+    text-shadow: 0 0 26px rgba(127,230,245,0.3);
   }
-  .spacer{ width: 84px; }
+  .spacer{ width: 96px; }
 
   .summary-bar{
     text-align:center;
-    color: var(--plum-soft);
-    font-weight:600;
-    font-size: 13.5px;
-    margin-bottom: 26px;
+    color: var(--muted);
+    font-size: 12.5px;
+    letter-spacing: 0.12em;
+    margin-bottom: 22px;
   }
 
+  .sync-wrap{ text-align:center; margin-bottom: 26px; }
   .sync-badge{
-    display:inline-block;
-    font-size: 11.5px;
-    font-weight:700;
-    color: var(--plum-soft);
-    background: var(--lavender);
-    border: 1px solid var(--lavender-line);
-    padding: 5px 14px;
-    border-radius: 999px;
-    margin-bottom: 10px;
-  }
-  .sync-wrap{
-    text-align:center;
-    margin-bottom: 26px;
+    display:inline-block; font-size: 11px; letter-spacing: 0.12em;
+    color: var(--muted); border: 1px solid var(--sys-faint);
+    padding: 5px 14px; border-radius: var(--radius);
   }
   .sync-hint{
-    max-width: 360px;
-    margin: 8px auto 0;
-    font-size: 11.5px;
-    color: var(--plum-soft);
-    font-weight:600;
-    line-height:1.4;
+    max-width: 380px; margin: 8px auto 0;
+    font-size: 11px; color: var(--muted); line-height:1.5;
   }
 
   /* LOCK SCREEN */
   body.app-locked > *:not(.lock-overlay){
-    filter: blur(14px);
-    pointer-events: none;
-    user-select: none;
+    filter: blur(14px); pointer-events:none; user-select:none;
   }
   .lock-overlay{
-    position:fixed;
-    inset:0;
-    z-index: 99999;
-    display:none;
-    align-items:center;
-    justify-content:center;
-    padding: 20px;
-    background:
-      radial-gradient(circle at 8% 10%, #FFF1DA 0%, transparent 40%),
-      radial-gradient(circle at 92% 6%, #E7F7F1 0%, transparent 38%),
-      radial-gradient(circle at 85% 92%, #F5E9FF 0%, transparent 42%),
-      var(--cream);
+    position:fixed; inset:0; z-index:99999; display:none;
+    align-items:center; justify-content:center; padding: 20px;
+    background: radial-gradient(circle at 50% 40%, rgba(127,230,245,0.10), transparent 60%), var(--void);
   }
   .lock-overlay.show{ display:flex; }
   .lock-card{
     background: var(--panel);
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow);
+    border: 1px solid var(--sys-dim);
     padding: 34px 28px;
-    text-align:center;
-    width: 100%;
-    max-width: 300px;
+    text-align:center; width:100%; max-width: 320px;
   }
-  .lock-emoji{ font-size: 34px; margin-bottom: 8px; }
-  .lock-card h2{
-    font-family:'Baloo 2', sans-serif;
-    font-size: 20px;
-    margin: 0 0 18px;
-  }
+  .lock-emoji{ font-size: 11px; letter-spacing: 0.28em; color: var(--sys); margin-bottom: 10px; }
+  .lock-card h2{ font-family:'Cinzel', serif; font-size: 19px; font-weight:600; margin: 0 0 18px; }
   .lock-input{
-    width:100%;
-    text-align:center;
-    letter-spacing: 10px;
-    font-size: 22px;
-    font-family:'Quicksand', sans-serif;
-    font-weight:700;
-    padding: 12px 10px;
-    border-radius: 14px;
-    border: 2px solid var(--lavender-line);
-    background: var(--lavender);
-    color: var(--plum);
-    outline:none;
+    width:100%; text-align:center; letter-spacing: 10px;
+    font-size: 21px; font-family:'Chakra Petch', sans-serif; font-weight:700;
+    padding: 11px 10px;
+    border: 1px solid var(--sys-dim);
+    background: rgba(9,11,24,0.8);
+    color: var(--ink); outline:none;
   }
-  .lock-input:focus{ border-color: var(--dandelion-deep); }
+  .lock-input:focus{ border-color: var(--sys); }
   .lock-input.shake{ animation: lock-shake 0.4s ease; }
   @keyframes lock-shake{
     0%,100%{ transform: translateX(0); }
     25%{ transform: translateX(-8px); }
     75%{ transform: translateX(8px); }
   }
-  .lock-error{
-    min-height: 18px;
-    font-size: 12.5px;
-    font-weight:700;
-    color: #C6483C;
-    margin-top: 8px;
+  .lock-error{ min-height: 18px; font-size: 12px; color: var(--scarlet); margin-top: 8px; }
+
+  .lock-field{ text-align:left; margin-bottom: 12px; }
+  .lock-field label{
+    display:block;
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    color: var(--muted);
+    margin-bottom: 5px;
   }
-  .lock-btn{
-    width:100%;
-    margin-top: 12px;
-    font-family:'Quicksand', sans-serif;
-    font-weight:700;
+  .lock-input.text{
+    letter-spacing: normal;
+    text-align:left;
     font-size: 14.5px;
+  }
+  .lock-btn-real[disabled]{ opacity:0.55; cursor:not-allowed; }
+  .lock-btn{
+    width:100%; margin-top: 12px;
+    font-family:'Chakra Petch', sans-serif; font-weight:700;
+    font-size: 13px; letter-spacing: 0.1em;
     padding: 12px 14px;
-    border-radius: 999px;
-    border:none;
-    cursor:pointer;
-    background: linear-gradient(135deg, var(--dandelion), var(--dandelion-deep));
-    color: #4A3510;
+    border-radius: var(--radius); border:none; cursor:pointer;
+    background: linear-gradient(135deg, var(--gold), #DFA637);
+    color: #12131F;
     transition: transform 0.15s ease;
   }
-  .lock-btn:hover{ transform: translateY(-1px); }
+  .lock-btn:active{ transform: translateY(1px); }
 
+  /* month windows */
   .month-block{
+    position:relative;
     background: var(--panel);
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow);
-    padding: 20px 18px 14px;
-    margin-bottom: 22px;
-    overflow: hidden;
+    border: 1px solid var(--sys-dim);
+    border-radius: var(--radius);
+    padding: 20px 18px 16px;
+    margin-bottom: 20px;
+    backdrop-filter: blur(6px);
   }
+  .month-block::before, .month-block::after{
+    content:''; position:absolute;
+    width: 14px; height: 14px;
+    border: 1px solid var(--sys);
+    opacity: 0.75; pointer-events:none;
+  }
+  .month-block::before{ top:-1px; left:-1px; border-right:none; border-bottom:none; }
+  .month-block::after{ bottom:-1px; right:-1px; border-left:none; border-top:none; }
   .month-block h2{
-    font-family:'Baloo 2', sans-serif;
-    font-size: 19px;
+    font-family:'Cinzel', serif;
+    font-weight:600; font-size: 18px;
+    letter-spacing: 0.05em;
+    color: var(--sys);
     margin: 0 0 4px;
   }
   .month-total{
-    font-size: 12.5px;
-    font-weight:700;
-    color: var(--plum-soft);
-    margin-bottom: 14px;
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    margin-bottom: 16px;
   }
 
   .budget-summary{
-    background: var(--lavender);
-    border-radius: 16px;
+    border: 1px solid var(--sys-faint);
+    background: rgba(9,11,24,0.55);
+    border-radius: var(--radius);
     padding: 14px 16px;
     margin-bottom: 16px;
   }
   .budget-summary.in-progress{
-    background: var(--pink, #FFD6E8);
+    border-color: var(--gold-dim);
+    background: linear-gradient(120deg, rgba(242,193,78,0.09), transparent 70%);
   }
   .budget-summary-head{
-    display:flex;
-    align-items:baseline;
-    justify-content:space-between;
-    margin-bottom: 10px;
-    flex-wrap: wrap;
-    gap: 6px;
+    display:flex; align-items:baseline; justify-content:space-between;
+    margin-bottom: 10px; flex-wrap: wrap; gap: 6px;
   }
   .budget-summary-title{
-    font-family:'Baloo 2', sans-serif;
-    font-size: 15px;
-    font-weight:700;
-    color: var(--plum);
+    font-family:'Cinzel', serif; font-size: 14px; font-weight:600;
+    letter-spacing: 0.06em; color: var(--muted);
   }
   .budget-summary-total{
-    font-family:'Baloo 2', sans-serif;
-    font-size: 16px;
-    font-weight:700;
-    color: var(--plum);
+    font-family:'Cinzel', serif; font-size: 17px; font-weight:700; color: var(--gold);
   }
-  .budget-cats{
-    display:flex;
-    flex-wrap: wrap;
-    gap: 8px;
-  }
+  .budget-cats{ display:flex; flex-wrap: wrap; gap: 7px; }
   .budget-cat-chip{
-    display:inline-flex;
-    align-items:center;
-    gap: 6px;
-    background: var(--panel);
-    border-radius: 999px;
-    padding: 5px 12px 5px 8px;
-    font-size: 12px;
-    font-weight:700;
-    color: var(--plum);
+    display:inline-flex; align-items:center; gap: 7px;
+    border: 1px solid var(--sys-faint);
+    background: rgba(255,255,255,0.02);
+    border-radius: var(--radius);
+    padding: 5px 11px;
+    font-size: 11.5px; color: var(--ink);
   }
-  .budget-cat-dot{
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    flex-shrink: 0;
-  }
+  .budget-cat-dot{ width: 9px; height: 9px; flex-shrink: 0; }
 
-  table{
-    width:100%;
-    border-collapse: separate;
-    border-spacing: 0 6px;
-  }
+  table{ width:100%; border-collapse: separate; border-spacing: 0 5px; }
   thead th{
     text-align:left;
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 0.6px;
-    color: var(--plum-soft);
-    font-weight:700;
-    padding: 0 12px 4px;
+    font-size: 10.5px;
+    letter-spacing: 0.18em;
+    color: var(--muted);
+    font-weight:600;
+    padding: 0 12px 6px;
   }
   tbody tr td{
-    padding: 12px 12px;
-    font-size: 14px;
-    font-weight:600;
+    padding: 11px 12px;
+    font-size: 13.5px;
+    background: rgba(9,11,24,0.6);
+    border-top: 1px solid var(--sys-faint);
+    border-bottom: 1px solid var(--sys-faint);
   }
   tbody tr td:first-child{
-    border-radius: 12px 0 0 12px;
-    background: var(--dandelion);
-    color: #4A3510;
+    border-left: 2px solid var(--gold);
+    color: var(--gold);
+    font-family:'Cinzel', serif;
+    font-weight:600;
     white-space:nowrap;
-    width: 108px;
+    width: 112px;
   }
   tbody tr td:nth-child(2){
-    background: var(--mint);
-    color: #1f4a3d;
+    color: var(--jade);
+    font-weight:600;
     text-align:center;
     white-space:nowrap;
-    width: 90px;
+    width: 92px;
   }
   tbody tr td:nth-child(3){
-    background: var(--lavender);
-    color: var(--plum);
-    font-weight:600;
+    color: var(--ink);
     word-break: break-word;
+    line-height:1.5;
   }
   tbody tr td.actions-cell{
     background: transparent;
+    border: none;
     width: 40px;
-    padding: 12px 8px 12px 4px;
+    padding: 11px 4px 11px 6px;
     text-align:center;
   }
   .delete-btn{
-    width: 26px;
-    height: 26px;
-    border-radius: 50%;
-    border: none;
-    background: var(--coral-bg, #FFE3E0);
-    color: #C6483C;
-    font-family:'Quicksand', sans-serif;
-    font-weight:700;
-    font-size: 15px;
-    line-height: 1;
+    width: 26px; height: 26px;
+    border-radius: var(--radius);
+    border: 1px solid transparent;
+    background: transparent;
+    color: var(--muted);
+    font-family:'Chakra Petch', sans-serif;
+    font-weight:700; font-size: 14px; line-height:1;
     cursor: pointer;
-    display:inline-flex;
-    align-items:center;
-    justify-content:center;
-    transition: transform 0.15s ease, background 0.15s ease;
+    display:inline-flex; align-items:center; justify-content:center;
+    transition: color 0.15s ease, background 0.15s ease, border-color 0.15s ease;
   }
   .delete-btn:hover{
-    background: #FFC9C3;
-    transform: scale(1.08);
+    color: var(--scarlet);
+    background: rgba(255,92,110,0.10);
+    border-color: rgba(255,92,110,0.4);
   }
 
   .empty-state{
     text-align:center;
     padding: 60px 20px;
-    color: var(--plum-soft);
+    color: var(--muted);
   }
-  .empty-state .emoji{ font-size: 40px; display:block; margin-bottom: 10px; }
+  .empty-state .emoji{
+    font-size: 11px; letter-spacing: 0.3em; color: var(--sys);
+    display:block; margin-bottom: 12px;
+  }
   .empty-state h3{
-    font-family:'Baloo 2', sans-serif;
-    color: var(--plum);
+    font-family:'Cinzel', serif;
+    font-weight:600;
+    color: var(--ink);
     margin: 0 0 6px;
   }
 
   @media (max-width: 480px){
-    tbody tr td{ font-size: 13px; padding: 10px; }
-    tbody tr td:first-child{ width: 78px; }
-    tbody tr td:nth-child(2){ width: 60px; }
+    tbody tr td{ font-size: 12.5px; padding: 10px; }
+    tbody tr td:first-child{ width: 84px; }
+    tbody tr td:nth-child(2){ width: 66px; }
+    .spacer{ width: 0; }
+  }
+  @media (prefers-reduced-motion: reduce){
+    *{ animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; }
   }
 </style>
 </head>
 <body>
 
+<div class="sky" id="sky" aria-hidden="true"></div>
+
 <div class="lock-overlay" id="lockOverlay">
   <div class="lock-card">
-    <div class="lock-emoji">🔒</div>
+    <div class="lock-emoji">STAR STREAM</div>
     <h2>Enter Code</h2>
     <form id="lockForm" autocomplete="off">
-      <input type="password" id="lockInput" class="lock-input" inputmode="numeric" pattern="[0-9]*" maxlength="5" autocomplete="off" placeholder="•••••" required>
+      <div class="lock-field">
+        <label for="lockEmail">EMAIL</label>
+        <input type="email" id="lockEmail" class="lock-input text" autocomplete="username" placeholder="you@example.com" required>
+      </div>
+      <div class="lock-field" style="margin-bottom:4px;">
+        <label for="lockPassword">PASSWORD</label>
+        <input type="password" id="lockPassword" class="lock-input text" autocomplete="current-password" placeholder="••••••••" required>
+      </div>
       <div class="lock-error" id="lockError"></div>
-      <button type="submit" class="lock-btn">Unlock</button>
+      <button type="submit" class="lock-btn lock-btn-real" id="lockSubmitBtn">ENTER</button>
     </form>
   </div>
 </div>
@@ -358,7 +351,7 @@
   <div class="top-row">
     <a href="index.html" class="back-btn">← Back</a>
     <h1>Archive 🗂️</h1>
-    <span class="spacer"></span>
+    <button class="back-btn" id="signOutBtn" style="border-color:rgba(255,92,110,0.4);color:var(--scarlet);background:rgba(255,92,110,0.06);cursor:pointer;">SIGN OUT</button>
   </div>
   <div class="summary-bar" id="summaryBar"></div>
 
@@ -382,8 +375,7 @@
     storageBucket: "beepaboop600.firebasestorage.app",
     messagingSenderId: "341983136727",
     appId: "1:341983136727:web:6364e709fe1737e3c75992"
-  
-};
+  };
   const SYNC_KEY = "my-hours-tracker";
   // ============================================================
 
@@ -399,7 +391,7 @@
     { key:'groceries', label:'Groceries',  color:'#6FBE8E' },
     { key:'gas',       label:'Gas',        color:'#FFD166' },
     { key:'food',      label:'Food',       color:'#FF9F5A' },
-    { key:'subscription', label:'Subscription', color:'#000000' },
+    { key:'subscription', label:'Subscription', color:'#6B6B84' },
     { key:'other',     label:'Other',      color:'#FF6B6B' }
   ];
 
@@ -538,7 +530,7 @@
       <div class="budget-summary${inProgress ? ' in-progress' : ''}">
         <div class="budget-summary-head">
           <span class="budget-summary-title">${label}${inProgress ? ' (in progress)' : ''}</span>
-          <span class="budget-summary-total">${fmtMoney(total)}${!inProgress && total > BUDGET_GOAL ? ` <span style="color:#C6483C;">(${fmtMoney(total - BUDGET_GOAL)} over)</span>` : ''}</span>
+          <span class="budget-summary-total">${fmtMoney(total)}${!inProgress && total > BUDGET_GOAL ? ` <span style="color:#FF5C6E;">(${fmtMoney(total - BUDGET_GOAL)} over)</span>` : ''}</span>
         </div>
         <div class="budget-cats">${chips}</div>
       </div>`;
@@ -554,8 +546,8 @@
       summaryBar.textContent = '';
       content.innerHTML = `
         <div class="empty-state">
-          <span class="emoji">🌱</span>
-          <h3>No entries yet</h3>
+          <span class="emoji">RECORD EMPTY</span>
+          <h3>No episodes filed yet</h3>
           <div>Log some hours or money from the main page and they'll show up here forever.</div>
         </div>`;
       return;
@@ -649,14 +641,22 @@
     return div.innerHTML;
   }
 
+  // ---- Firebase app (shared by Auth and Firestore — initialize exactly once) ----
+  let firebaseApp = null;
+  async function ensureFirebaseApp(){
+    if(firebaseApp) return firebaseApp;
+    const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js");
+    firebaseApp = initializeApp(firebaseConfig);
+    return firebaseApp;
+  }
+
   // ---- Cloud sync init ----
   async function initSync(){
     const configured = !!(firebaseConfig.apiKey && firebaseConfig.projectId);
     if(configured){
       try{
-        const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js");
+        const app = await ensureFirebaseApp();
         const { getFirestore, doc, onSnapshot, setDoc } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js");
-        const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         const docRef = doc(db, "hourTracker", SYNC_KEY);
 
@@ -666,7 +666,14 @@
           writeLocalBudget(budgetData);
           writeLocalBudgetArchive(budgetArchive);
           try{
-            await setDoc(docRef, { entries, budget: budgetData, budgetArchive, updatedAt: Date.now() });
+            // Carry the quest board through untouched — this page doesn't
+            // edit it, but a full setDoc would otherwise erase it.
+            let openTasks = [], openBag = { items: [], purchases: [] }, openSeq = 1, openPending = [];
+            try{ openTasks = JSON.parse(localStorage.getItem('hourTrackerTasks_v1') || '[]'); }catch(e){ openTasks = []; }
+            try{ openPending = JSON.parse(localStorage.getItem('hourTrackerPending_v1') || '[]'); }catch(e){ openPending = []; }
+            try{ openBag = JSON.parse(localStorage.getItem('hourTrackerBag_v1') || 'null') || openBag; }catch(e){}
+            try{ openSeq = Number(localStorage.getItem('hourTrackerSeq_v1')) || 1; }catch(e){}
+            await setDoc(docRef, { entries, pending: openPending, tasks: openTasks, bag: openBag, seq: openSeq, budget: budgetData, budgetArchive, updatedAt: Date.now() });
           }catch(e){
             console.error('Cloud save failed, changes are saved locally only for now.', e);
           }
@@ -679,7 +686,7 @@
         renderArchive();
         setSyncBadge();
 
-        onSnapshot(docRef, snap => {
+        stopSync = onSnapshot(docRef, snap => {
           const data = snap.exists() ? snap.data() : null;
           const cloudEntries = (data && Array.isArray(data.entries)) ? data.entries : [];
           entries = cloudEntries;
@@ -708,49 +715,133 @@
     setSyncBadge();
   }
 
-  // ---- Lock screen ----
-  // Change this to your own 5-digit code (must match index.html).
-  const ACCESS_CODE = '83364';
-  const UNLOCK_KEY = 'hourTrackerUnlocked_v1';
+  // ---- Authentication (Firebase Auth, email + password — same account as index.html) ----
+  let authInstance = null;
+  let stopSync = null;
+  let syncStarted = false;
 
   function showLock(){
     document.body.classList.add('app-locked');
     document.getElementById('lockOverlay').classList.add('show');
-    const input = document.getElementById('lockInput');
-    input.value = '';
-    setTimeout(() => input.focus(), 50);
+    setTimeout(() => document.getElementById('lockEmail').focus(), 50);
   }
   function hideLock(){
     document.body.classList.remove('app-locked');
     document.getElementById('lockOverlay').classList.remove('show');
   }
-  function attemptUnlock(){
-    const input = document.getElementById('lockInput');
-    const err = document.getElementById('lockError');
-    if(input.value.trim() === ACCESS_CODE){
-      sessionStorage.setItem(UNLOCK_KEY, '1');
-      err.textContent = '';
+
+  async function initAuth(){
+    const configured = !!(firebaseConfig.apiKey && firebaseConfig.projectId);
+    if(!configured){
       hideLock();
       initSync();
-    } else {
-      err.textContent = 'Incorrect code';
-      input.value = '';
-      input.classList.remove('shake');
-      void input.offsetWidth; // restart animation
-      input.classList.add('shake');
-      input.focus();
+      return;
+    }
+    try{
+      const app = await ensureFirebaseApp();
+      const {
+        getAuth, onAuthStateChanged, signInWithEmailAndPassword,
+        signOut, setPersistence, browserLocalPersistence
+      } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js");
+
+      authInstance = getAuth(app);
+      await setPersistence(authInstance, browserLocalPersistence);
+
+      onAuthStateChanged(authInstance, (user) => {
+        if(user){
+          hideLock();
+          if(!syncStarted){ syncStarted = true; initSync(); }
+        } else {
+          syncStarted = false;
+          if(stopSync){ stopSync(); stopSync = null; }
+          showLock();
+        }
+      });
+
+      document.getElementById('lockForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const email = document.getElementById('lockEmail').value.trim();
+        const password = document.getElementById('lockPassword').value;
+        const err = document.getElementById('lockError');
+        const btn = document.getElementById('lockSubmitBtn');
+        btn.disabled = true;
+        const originalLabel = btn.textContent;
+        btn.textContent = 'CONNECTING…';
+        try{
+          await signInWithEmailAndPassword(authInstance, email, password);
+          err.textContent = '';
+        }catch(ex){
+          console.error('Sign-in failed', ex);
+          err.textContent = 'Authentication failed';
+          const pw = document.getElementById('lockPassword');
+          pw.value = '';
+          pw.classList.remove('shake');
+          void pw.offsetWidth;
+          pw.classList.add('shake');
+          pw.focus();
+        } finally {
+          btn.disabled = false;
+          btn.textContent = originalLabel;
+        }
+      });
+
+      const signOutBtn = document.getElementById('signOutBtn');
+      if(signOutBtn){
+        signOutBtn.addEventListener('click', () => { signOut(authInstance); });
+      }
+    }catch(e){
+      console.error('Firebase Auth failed to load; running local-only for this session.', e);
+      hideLock();
+      initSync();
     }
   }
-  document.getElementById('lockForm').addEventListener('submit', (e) => {
-    e.preventDefault();
-    attemptUnlock();
-  });
 
-  if(sessionStorage.getItem(UNLOCK_KEY) === '1'){
-    initSync();
-  } else {
-    showLock();
-  }
+  initAuth();
+
+  // ---- constellation sky (mirrors the tracker page) ----
+  (function buildSky(){
+    const host = document.getElementById('sky');
+    if(!host) return;
+    const SHAPES = [
+      { name:'THE DIPPER', pts:[[0,0.55],[0.2,0.38],[0.42,0.3],[0.62,0.42],[0.6,0.7],[0.38,0.82],[0.18,0.74],[0,0.55]], bright:[2] },
+      { name:'CASSIOPEIA', pts:[[0,0.2],[0.24,0.72],[0.5,0.22],[0.76,0.75],[1,0.28]], bright:[2] },
+      { name:'THE READER', pts:[[0.5,0],[0.22,0.26],[0.5,0.44],[0.78,0.26],[0.5,0.44],[0.5,0.82],[0.28,1],[0.5,0.82],[0.74,1]], bright:[0,5] },
+      { name:'LYRA', pts:[[0.1,0.08],[0.46,0.3],[0.28,0.62],[0.62,0.78],[0.9,0.5],[0.46,0.3]], bright:[0] },
+      { name:'THE WALL', pts:[[0,0.86],[0.16,0.4],[0.4,0.62],[0.58,0.14],[0.78,0.5],[1,0.2]], bright:[3] },
+      { name:'SCORPIUS', pts:[[0,0.12],[0.2,0.3],[0.42,0.4],[0.6,0.56],[0.72,0.8],[0.9,0.74],[0.94,0.5]], bright:[2] },
+      { name:'THE ARK', pts:[[0.05,0.3],[0.3,0.68],[0.62,0.74],[0.9,0.42],[0.62,0.74],[0.5,1]], bright:[3] },
+      { name:'ORION', pts:[[0.16,0.05],[0.82,0.12],[0.34,0.44],[0.5,0.5],[0.66,0.56],[0.2,0.92],[0.86,0.86],[0.66,0.56]], bright:[3] }
+    ];
+    const PLACE = [
+      { x:0.05, y:0.04, w:0.22, h:0.16 }, { x:0.70, y:0.02, w:0.24, h:0.13 },
+      { x:0.38, y:0.16, w:0.20, h:0.24 }, { x:0.06, y:0.34, w:0.16, h:0.18 },
+      { x:0.76, y:0.32, w:0.20, h:0.20 }, { x:0.30, y:0.58, w:0.22, h:0.18 },
+      { x:0.04, y:0.68, w:0.20, h:0.18 }, { x:0.68, y:0.66, w:0.26, h:0.24 }
+    ];
+    const W = 1000, H = 1000;
+    let seed = 20260916;
+    const rnd = () => { seed = (seed * 1103515245 + 12345) % 2147483648; return seed / 2147483648; };
+    const parts = [];
+    for(let i=0;i<220;i++){
+      const x = rnd()*W, y = rnd()*H, r = 0.6 + rnd()*1.5;
+      const o = (0.25 + rnd()*0.6).toFixed(2);
+      const tw = rnd() > 0.72;
+      parts.push(`<circle class="star${tw?' twinkle':''}" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${r.toFixed(2)}" style="--o:${o};opacity:${o};animation-delay:${(rnd()*4).toFixed(2)}s"/>`);
+    }
+    SHAPES.forEach((shape, i) => {
+      const box = PLACE[i % PLACE.length];
+      const pts = shape.pts.map(([px,py]) => [(box.x + px*box.w)*W, (box.y + py*box.h)*H]);
+      parts.push(`<path class="c-line" d="${pts.map((p,k)=>`${k?'L':'M'}${p[0].toFixed(1)},${p[1].toFixed(1)}`).join(' ')}"/>`);
+      pts.forEach((p,k) => {
+        const b = shape.bright.includes(k);
+        parts.push(`<circle class="c-star${b?' bright':''}" cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="${b?2.6:1.8}"/>`);
+      });
+      const low = pts.reduce((a,b) => (b[1] > a[1] ? b : a));
+      parts.push(`<text class="c-name" x="${low[0].toFixed(1)}" y="${(low[1]+16).toFixed(1)}" text-anchor="middle">${shape.name}</text>`);
+    });
+    host.innerHTML = `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">${parts.join('')}</svg>`;
+  })();
+
 </script>
 </body>
 </html>
