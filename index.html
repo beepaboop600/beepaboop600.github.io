@@ -991,10 +991,10 @@
         <span class="member-chip" id="memberChip">MEMBERSHIP LV 1</span>
         <span class="member-title" id="memberTitle">Unregistered Bag</span>
       </div>
-      <div class="member-xp" id="memberXp">0 / 500 BAG XP</div>
+      <div class="member-xp" id="memberXp">0 / 1100 BAG XP</div>
     </div>
     <div class="xp-track"><div class="xp-fill" id="xpFill"></div></div>
-    <div class="win-sub" style="margin:10px 0 0;">The bag grows on what you spend, not what you earn. Buy from it to raise your membership.</div>
+    <div class="win-sub" id="memberFlavor" style="margin:10px 0 0;">Nothing about you has caught the Star Stream's eye. Yet.</div>
   </div>
 
   <div class="win scenario-win" id="scenarioWin">
@@ -1063,7 +1063,7 @@
 
   <div class="win" id="subBoard">
     <h2 class="win-title">Sub-scenarios</h2>
-    <div class="win-sub" id="boardSub">Not numbered by the Star Stream — numbered by you. Drag between the two panels.</div>
+    <div class="win-sub" id="boardSub">Not currently airing on the Star Stream. Still worth watching.</div>
 
     <form class="new-sub" id="newSubForm" autocomplete="off">
       <input type="text" id="subInput" placeholder="Name the sub-scenario…" maxlength="500" required>
@@ -1428,6 +1428,24 @@
     'Master of the Bag','Owner of the Stream'
   ];
 
+  // Narrative read on how the Bureau and the Constellations regard you at
+  // each membership level — replaces the old flat instructional line.
+  // Escalates from total obscurity to open, active interest.
+  const MEMBER_FLAVOR = [
+    'Nothing about you has caught the Star Stream\u2019s eye. Yet.',
+    'A junior Dokkaebi glanced at your file. It didn\u2019t stay interested.',
+    'The Bureau finally opened a file with your name on it.',
+    'A few Constellations know your name now. None of them are betting yet.',
+    'The Bureau flagged you as worth watching. A quiet sponsor or two agrees.',
+    'Several Constellations are watching closely now. Coins are starting to move.',
+    'The Bureau speaks well of you these days. That\u2019s rarer than it sounds.',
+    'Your scenarios are getting real airtime now. The Star Stream doesn\u2019t waste slots.',
+    'Major Constellations have staked real interest in you. The Bureau treats your file like priority mail.',
+    'The Dokkaebi King himself has heard your name. That doesn\u2019t happen by accident.',
+    'Constellations argue about you on their own broadcasts now. The Bureau stopped pretending you\u2019re ordinary.',
+    'The Star Stream doesn\u2019t just broadcast you anymore. It waits to see what you\u2019ll do next.'
+  ];
+
   const CONSTELLATIONS = [
     'Secretive Plotter','Demon-like Judge of Fire','Prisoner of the Golden Headband',
     'Abyssal Black Flame Dragon','Jealous Queen of Heaven','Sword Saint of the Mountain',
@@ -1721,7 +1739,8 @@
     return bag.purchases.reduce((s,p) => s + (Number(p.price) || 0), 0);
   }
   function memberTitle(level){ return MEMBER_TITLES[Math.min(level, MEMBER_TITLES.length) - 1]; }
-  function xpToNext(level){ return 500 * level; }
+  function memberFlavor(level){ return MEMBER_FLAVOR[Math.min(level, MEMBER_FLAVOR.length) - 1]; }
+  function xpToNext(level){ return 500 * level + 600; }
   function membershipFromXp(xp){
     let level = 1, floor = 0;
     while(xp >= floor + xpToNext(level)){
@@ -1984,8 +2003,8 @@
         const empty = document.createElement('div');
         empty.className = 'col-empty';
         empty.textContent = listName === 'available'
-          ? 'Nothing open. Name a sub-scenario above, or drag one over from Accepted.'
-          : 'Nothing queued. Drag a sub-scenario here to save it for later.';
+          ? 'The star stream is quiet... No sub-scenarios currently advertised.'
+          : 'No accepted sub-scenarios. The coins won\u2019t earn themselves...';
         host.appendChild(empty);
         return;
       }
@@ -2662,6 +2681,7 @@
     // Membership
     document.getElementById('memberChip').textContent = `MEMBERSHIP LV ${stats.level}`;
     document.getElementById('memberTitle').textContent = memberTitle(stats.level);
+    document.getElementById('memberFlavor').textContent = memberFlavor(stats.level);
     document.getElementById('memberXp').textContent =
       `${fmtCoins(stats.levelInto)} / ${fmtCoins(stats.levelNeed)} BAG XP`;
     document.getElementById('xpFill').style.width = Math.min(100, (stats.levelInto / stats.levelNeed) * 100) + '%';
@@ -2721,15 +2741,15 @@
     document.getElementById('avgStat').classList.toggle('alert', avgWeekly > 29);
 
     // Board subtitle
-    const openCount = tasks.filter(t => t.list === 'available').length;
+    const openCount = tasks.filter(t => t.list === 'planned').length;
     const todayHours = totalHoursOf(all.filter(e => e.date === dateKey(new Date())));
     const sub = document.getElementById('boardSub');
     if(todayHours > 0){
       sub.textContent = `${fmtDuration(todayHours)} cleared today. Drag between the panels to reorder the queue.`;
     } else if(openCount > 0){
-      sub.textContent = `${openCount} sub-scenario${openCount === 1 ? '' : 's'} available. Start the clock on one.`;
+      sub.textContent = `${openCount} sub-scenario${openCount === 1 ? '' : 's'} open and accepted. Start the clock on one.`;
     } else {
-      sub.textContent = 'Not numbered by the Star Stream — numbered by you. Drag between the two panels.';
+      sub.textContent = 'Not currently airing on the Star Stream. Still worth watching.';
     }
 
     renderBag();
