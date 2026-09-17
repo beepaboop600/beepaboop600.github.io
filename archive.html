@@ -415,6 +415,7 @@
   let budgetData = null;
   let budgetArchive = {};
   let cloudEnabled = false;
+  let hasSyncedOnce = false;   // true once this device has received a real Firestore snapshot
   let persist = () => { writeLocal(entries); writeLocalBudget(budgetData); writeLocalBudgetArchive(budgetArchive); };
 
   function readLocal(){
@@ -435,8 +436,50 @@
   function saveDeletedIds(ids){
     localStorage.setItem(DELETED_KEY, JSON.stringify(ids));
   }
+  // Collapse every entries[] item that shares a date into one record, with
+  // hours summed and descriptions joined. Mirrors index.html's version so
+  // both pages agree on the merged shape. Idempotent.
+  function mergeEntriesByDate(list){
+    if(!Array.isArray(list) || list.length === 0) return [];
+    const byDate = new Map();
+    list.forEach(e => {
+      const key = e.date;
+      if(!key) return;
+      if(!byDate.has(key)){
+        byDate.set(key, {
+          id: e.id,
+          date: key,
+          hours: 0,
+          descs: [],
+          subScenarios: [],
+          count: 0,
+          loggedAt: e.loggedAt || new Date().toISOString()
+        });
+      }
+      const b = byDate.get(key);
+      b.hours += Number(e.hours) || 0;
+      if(e.description) b.descs.push(e.description);
+      if(Number(e.scenarioNo)) b.subScenarios.push(Number(e.scenarioNo));
+      if(Array.isArray(e.subScenarios)) b.subScenarios.push(...e.subScenarios.map(Number).filter(Boolean));
+      b.count += Number(e.count) || 1;
+      if(e.loggedAt && e.loggedAt > b.loggedAt) b.loggedAt = e.loggedAt;
+    });
+    return [...byDate.values()]
+      .map(b => ({
+        id: b.id,
+        date: b.date,
+        hours: Math.round(b.hours * 100) / 100,
+        description: b.descs.join(' · '),
+        episode: true,
+        subScenarios: b.subScenarios,
+        count: b.count,
+        loggedAt: b.loggedAt
+      }))
+      .sort((a, c) => (a.date < c.date ? -1 : (a.date > c.date ? 1 : 0)));
+  }
+
   function mergedLocal(){
-    return readLocal();
+    return mergeEntriesByDate(readLocal());
   }
   function readLocalBudget(){
     try{
@@ -665,6 +708,12 @@
           writeLocal(entries);
           writeLocalBudget(budgetData);
           writeLocalBudgetArchive(budgetArchive);
+
+          // Never push to the cloud before this device has seen what's
+          // actually there — see the matching note in index.html. Local
+          // saves above still happen immediately regardless.
+          if(!hasSyncedOnce) return;
+
           try{
             // Carry the quest board through untouched — this page doesn't
             // edit it, but a full setDoc would otherwise erase it.
@@ -682,22 +731,36 @@
         entries = mergedLocal();
         budgetData = readLocalBudget();
         budgetArchive = readLocalBudgetArchive();
-        if(applyBudgetRollover()) persist();
         renderArchive();
         setSyncBadge();
 
         stopSync = onSnapshot(docRef, snap => {
+          // This device has now seen the real cloud state and may push.
+          hasSyncedOnce = true;
+
           const data = snap.exists() ? snap.data() : null;
-          const cloudEntries = (data && Array.isArray(data.entries)) ? data.entries : [];
-          entries = cloudEntries;
+
+          // If the cloud document has no entries yet, local history is the
+          // one that's actually true — keep it rather than wiping it to
+          // match an empty cloud (this was the earlier data-loss bug).
+          let repair = false;
+          if(data && Array.isArray(data.entries)){
+            const merged = mergeEntriesByDate(data.entries);
+            repair = repair || merged.length !== data.entries.length;
+            entries = merged;
+          } else {
+            entries = mergedLocal();
+            repair = repair || entries.length > 0;
+          }
+
           budgetData = (data && data.budget) ? data.budget : { month: currentMonthKey(), categories: emptyCategories(), total: 0 };
           budgetArchive = (data && data.budgetArchive) ? data.budgetArchive : {};
-          writeLocal(cloudEntries);
+          writeLocal(entries);
           writeLocalBudget(budgetData);
           writeLocalBudgetArchive(budgetArchive);
           const rolled = applyBudgetRollover();
           renderArchive();
-          if(rolled) persist();
+          if(rolled || repair) persist();
         }, err => {
           console.error('Firestore sync error, using local data.', err);
         });

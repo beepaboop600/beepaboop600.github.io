@@ -1066,7 +1066,7 @@
     <div class="win-sub" id="boardSub">Not numbered by the Star Stream — numbered by you. Drag between the two panels.</div>
 
     <form class="new-sub" id="newSubForm" autocomplete="off">
-      <input type="text" id="subInput" placeholder="Name the sub-scenario…" maxlength="120" required>
+      <input type="text" id="subInput" placeholder="Name the sub-scenario…" maxlength="500" required>
       <button type="submit" class="primary-btn">OPEN SCENARIO #<span id="nextNo">1</span></button>
     </form>
 
@@ -1080,7 +1080,7 @@
       </div>
       <div class="col planned" id="colPlanned" data-list="planned">
         <div class="col-head">
-          <h3>PLANNED</h3>
+          <h3>ACCEPTED</h3>
           <span class="col-count" id="countPlanned">0</span>
         </div>
         <div class="col-body" id="listPlanned"></div>
@@ -1143,6 +1143,12 @@
     <h2 class="win-title" id="calTitle">August 2026</h2>
     <div class="win-sub">Days the scenario moved.</div>
     <div class="cal-grid" id="calGrid"></div>
+  </div>
+
+  <div class="win" style="border-color:rgba(255,92,110,0.35);">
+    <h2 class="win-title" style="color:var(--scarlet);">Dokkaebi Bureau Recall</h2>
+    <div class="win-sub">Empties the bag, zeroes coins and membership, restarts sub-scenario numbering, and clears titles. Your archive and recorded hours are never touched.</div>
+    <button class="archive-btn" id="fullResetBtn" style="border-color:rgba(255,92,110,0.4);color:var(--scarlet);background:rgba(255,92,110,0.06);cursor:pointer;">RESET ALL PROGRESS</button>
   </div>
 
   <div class="archive-link-wrap">
@@ -1330,6 +1336,9 @@
   const PENDING_KEY = 'hourTrackerPending_v1';
   const BAG_KEY = 'hourTrackerBag_v1';
   const SEQ_KEY = 'hourTrackerSeq_v1';
+  const COIN_OFFSET_KEY = 'hourTrackerCoinOffset_v1';
+  const MEMBER_OFFSET_KEY = 'hourTrackerMemberOffset_v1';
+  const TITLE_RESET_KEY = 'hourTrackerTitleResetAt_v1';
   const SOUND_KEY = 'hourTrackerSound_v1';
 
   const GOAL = 90;                 // hours per main scenario (one month)
@@ -1429,22 +1438,85 @@
     'laughs out loud','says it was worth the wait','is impressed'
   ];
 
-  let entries = [];      // settled archive logs — one per day, written at episode end
+  // Collapse every entries[] item that shares a date into one record, with
+  // hours summed and descriptions joined. Applied every time entries are
+  // loaded or written, so old multi-entry days merge permanently and any
+  // future double-close on the same day merges too. Idempotent — merging
+  // already-merged data changes nothing.
+  function mergeEntriesByDate(list){
+    if(!Array.isArray(list) || list.length === 0) return [];
+    const byDate = new Map();
+    list.forEach(e => {
+      const key = e.date;
+      if(!key) return;
+      if(!byDate.has(key)){
+        byDate.set(key, {
+          id: e.id,
+          date: key,
+          hours: 0,
+          descs: [],
+          subScenarios: [],
+          count: 0,
+          loggedAt: e.loggedAt || new Date().toISOString()
+        });
+      }
+      const b = byDate.get(key);
+      b.hours += Number(e.hours) || 0;
+      if(e.description) b.descs.push(e.description);
+      if(Number(e.scenarioNo)) b.subScenarios.push(Number(e.scenarioNo));
+      if(Array.isArray(e.subScenarios)) b.subScenarios.push(...e.subScenarios.map(Number).filter(Boolean));
+      b.count += Number(e.count) || 1;
+      if(e.loggedAt && e.loggedAt > b.loggedAt) b.loggedAt = e.loggedAt;
+    });
+    return [...byDate.values()]
+      .map(b => ({
+        id: b.id,
+        date: b.date,
+        hours: Math.round(b.hours * 100) / 100,
+        description: b.descs.join(' · '),
+        episode: true,
+        subScenarios: b.subScenarios,
+        count: b.count,
+        loggedAt: b.loggedAt
+      }))
+      .sort((a, c) => (a.date < c.date ? -1 : (a.date > c.date ? 1 : 0)));
+  }
+
+  let entries = [];      // settled archive logs — ONE per day, merged on every load
   let pending = [];      // sub-scenarios cleared today, not yet compiled
   let tasks = [];        // { id, no, title, list, accumMs, runningSince, createdAt }
   let bag = { items: [], purchases: [] };
   let seq = 1;           // next sub-scenario number
+  let coinResetOffset = 0;       // subtracted from lifetime-earned coins when displaying balance
+  let membershipResetOffset = 0; // subtracted from lifetime-spent coins when computing membership level
+  let titlesResetAt = null;      // ISO timestamp; only entries logged after this count toward titles
   let budgetData = null;
   let budgetArchive = {};
   let cloudEnabled = false;
+  let hasSyncedOnce = false;   // true once this device has received a real Firestore snapshot
   let persist = () => {
     writeLocal(entries); writeLocalPending(pending); writeLocalTasks(tasks); writeLocalBag(bag);
-    writeLocalSeq(seq); writeLocalBudget(budgetData); writeLocalBudgetArchive(budgetArchive);
+    writeLocalSeq(seq); writeLocalCoinOffset(coinResetOffset); writeLocalMemberOffset(membershipResetOffset);
+    writeLocalTitleResetAt(titlesResetAt);
+    writeLocalBudget(budgetData); writeLocalBudgetArchive(budgetArchive);
   };
 
   // Everything the tracker measures counts both settled logs and the
   // sub-scenarios cleared today but not yet compiled.
   function allEntries(){ return entries.concat(pending); }
+
+  // Titles are never stored as "unlocked" — they're recomputed live from
+  // history every render. To let a title reset actually stick without
+  // deleting any archive entry or touching its hours, we instead only feed
+  // entries LOGGED after the reset moment into the title tests below.
+  // Everything else (archive, calendar, main-scenario progress, coins
+  // earned) keeps reading the full, untouched history.
+  function titleEntries(){
+    const all = allEntries();
+    if(!titlesResetAt) return all;
+    return all.filter(e => (e.loggedAt || '') > titlesResetAt);
+  }
+  function titleStats(){ return gameStats(titleEntries()); }
 
   // ---------- storage ----------
   function safeParse(raw, fallback){
@@ -1463,6 +1535,12 @@
   function writeLocalBag(b){ localStorage.setItem(BAG_KEY, JSON.stringify(normalizeBag(b))); }
   function readLocalSeq(){ const n = Number(localStorage.getItem(SEQ_KEY)); return Number.isFinite(n) && n > 0 ? n : 1; }
   function writeLocalSeq(n){ localStorage.setItem(SEQ_KEY, String(n)); }
+  function readLocalCoinOffset(){ const n = Number(localStorage.getItem(COIN_OFFSET_KEY)); return Number.isFinite(n) ? n : 0; }
+  function writeLocalCoinOffset(n){ localStorage.setItem(COIN_OFFSET_KEY, String(n)); }
+  function readLocalMemberOffset(){ const n = Number(localStorage.getItem(MEMBER_OFFSET_KEY)); return Number.isFinite(n) ? n : 0; }
+  function writeLocalMemberOffset(n){ localStorage.setItem(MEMBER_OFFSET_KEY, String(n)); }
+  function readLocalTitleResetAt(){ const v = localStorage.getItem(TITLE_RESET_KEY); return v || null; }
+  function writeLocalTitleResetAt(v){ if(v) localStorage.setItem(TITLE_RESET_KEY, v); else localStorage.removeItem(TITLE_RESET_KEY); }
   function readLocalBudget(){ return safeParse(localStorage.getItem(BUDGET_KEY), null); }
   function writeLocalBudget(b){ if(b) localStorage.setItem(BUDGET_KEY, JSON.stringify(b)); }
   function readLocalBudgetArchive(){ return safeParse(localStorage.getItem(BUDGET_ARCHIVE_KEY), {}) || {}; }
@@ -1485,15 +1563,13 @@
       purchases: (b && Array.isArray(b.purchases)) ? b.purchases : []
     };
   }
-  // The sub-scenario counter only ever moves forward, whatever the cloud hands us.
+  // The sub-scenario counter only ever moves forward relative to what's
+  // CURRENTLY on the board — not your whole lifetime archive — so that
+  // resetting it (see resetScenarioNumber) actually sticks instead of
+  // being pulled back up by old, already-archived numbers.
   function syncSeq(){
     let highest = 0;
     tasks.forEach(t => { if(t.no > highest) highest = t.no; });
-    allEntries().forEach(e => {
-      const n = Number(e.scenarioNo) || 0;
-      if(n > highest) highest = n;
-      (e.subScenarios || []).forEach(v => { const k = Number(v) || 0; if(k > highest) highest = k; });
-    });
     seq = Math.max(Number(seq) || 1, highest + 1, readLocalSeq());
     const el = document.getElementById('nextNo');
     if(el) el.textContent = String(seq);
@@ -1660,7 +1736,9 @@
     const monthTotal = totalHoursOf(entriesForCurrentMonth(list));
     const earned = coinsEarned(list);
     const spent = coinsSpent();
-    const mem = membershipFromXp(spent);
+    const balance = Math.max(0, earned - spent - coinResetOffset);
+    const bagXp = Math.max(0, spent - membershipResetOffset);
+    const mem = membershipFromXp(bagXp);
     const perDay = {}, counts = {};
     list.forEach(e => {
       perDay[e.date] = (perDay[e.date] || 0) + Number(e.hours || 0);
@@ -1670,8 +1748,7 @@
       total: totalHoursOf(list),
       subs: list.length,
       monthTotal,
-      earned, spent,
-      balance: earned - spent,
+      earned, spent, balance,
       level: mem.level,
       levelInto: mem.into,
       levelNeed: mem.need,
@@ -1847,7 +1924,7 @@
       }
     });
     t.runningSince = Date.now();
-    t.list = 'available';
+    t.list = 'planned';
     persist();
     renderBoard();
     playNotes([587, 784], 0.07);
@@ -1878,7 +1955,7 @@
   function subCardHtml(t){
     const running = !!t.runningSince;
     const other = t.list === 'available' ? 'planned' : 'available';
-    const arrow = t.list === 'available' ? 'PLAN →' : '← OPEN';
+    const arrow = t.list === 'available' ? 'ACCEPT →' : '← AVAILABLE';
     return `
       <div class="sub-top">
         <div>
@@ -1907,7 +1984,7 @@
         const empty = document.createElement('div');
         empty.className = 'col-empty';
         empty.textContent = listName === 'available'
-          ? 'Nothing open. Name a sub-scenario above, or drag one over from planned.'
+          ? 'Nothing open. Name a sub-scenario above, or drag one over from Accepted.'
           : 'Nothing queued. Drag a sub-scenario here to save it for later.';
         host.appendChild(empty);
         return;
@@ -2049,6 +2126,7 @@
   function clearSub(task, hours, date){
     if(!(hours > 0)) return;
     const before = gameStats(allEntries());
+    const beforeTitles = titleStats();
     const beforeScenario = currentScenario(allEntries());
 
     pending = pending.concat([{
@@ -2064,6 +2142,7 @@
     render();
 
     const after = gameStats(allEntries());
+    const afterTitles = titleStats();
     const gained = after.earned - before.earned;
 
     floatGain(`+${fmtCoins(gained)} C`);
@@ -2073,7 +2152,7 @@
 
     let delay = 1500;
 
-    TITLES.filter(t => t.test(after) && !t.test(before)).forEach(t => {
+    TITLES.filter(t => t.test(afterTitles) && !t.test(beforeTitles)).forEach(t => {
       setTimeout(() => {
         systemMsg(`You have acquired the title '${t.name}'.`, 'gold');
         spawnConfetti();
@@ -2139,7 +2218,7 @@
       made.push(compileDay(date, items));
     });
     if(made.length === 0) return [];
-    entries = entries.concat(made);
+    entries = mergeEntriesByDate(entries.concat(made));
     pending = pending.filter(e => !dates.includes(e.date));
     return made;
   }
@@ -2245,6 +2324,7 @@
     const item = bag.items.find(i => i.id === itemId);
     if(!item) return;
     const before = gameStats(allEntries());
+    const beforeTitles = titleStats();
     if(before.balance < item.price){
       systemMsg(`Not enough coins. You need ${fmtCoins(item.price - before.balance)} more.`);
       playNotes([330, 247], 0.08);
@@ -2261,13 +2341,14 @@
     render();
 
     const after = gameStats(allEntries());
+    const afterTitles = titleStats();
     playNotes([784, 988, 1175], 0.08);
     floatGain(`−${fmtCoins(item.price)} C`, document.getElementById('itemList'));
     systemMsg(`'${item.name}' has been taken from the Dokkaebi Bag.`, 'gold');
     setTimeout(() => systemMsg(`The bag absorbs ${fmtCoins(item.price)} coins. Bag XP increased.`, 'coin'), 800);
 
     let delay = 1700;
-    TITLES.filter(t => t.test(after) && !t.test(before)).forEach(t => {
+    TITLES.filter(t => t.test(afterTitles) && !t.test(beforeTitles)).forEach(t => {
       setTimeout(() => { systemMsg(`You have acquired the title '${t.name}'.`, 'gold'); spawnConfetti(); }, delay);
       delay += 1000;
     });
@@ -2299,6 +2380,63 @@
       playNotes([587, 740], 0.06);
       systemMsg(`'${item.name}' repriced: ${fmtCoins(was)} C → ${fmtCoins(price)} C.`, 'coin');
     }
+  }
+
+  // ---- Resets — each wipes one game-progression stat, never your hour
+  // history or archive. Coin/membership resets work by recording an offset
+  // rather than deleting anything, so purchase history stays intact.
+  function resetCoins(){
+    if(!confirm('Reset coins held to 0? Your hour log and purchase history are untouched.')) return;
+    const stats = gameStats(allEntries());
+    coinResetOffset += stats.balance;
+    persist();
+    render();
+    systemMsg('Coin balance reset to 0.', 'coin');
+  }
+
+  function resetMembership(){
+    if(!confirm('Reset Dokkaebi membership to Level 1? Your purchase history is kept.')) return;
+    membershipResetOffset = coinsSpent();
+    persist();
+    render();
+    systemMsg('Membership reset to Level 1.', 'gold');
+  }
+
+  function resetScenarioNumber(){
+    if(!confirm('Reset the sub-scenario counter back to #1?')) return;
+    seq = 1;
+    writeLocalSeq(1); // clear the stored floor first, or syncSeq below would pull it right back up
+    syncSeq();         // still guards against any currently-open task numbers
+    persist();
+    render();
+    systemMsg(`Sub-scenario numbering reset — next one is #${seq}.`);
+  }
+
+  // Single "start the bag over" trigger. Combines the coin/membership/seq
+  // resets above with actually emptying the bag (items + purchase history)
+  // and rolling the title-eligibility clock forward. Titles are never
+  // stored as "unlocked" — they're recomputed live from history — so
+  // clearing the bag/membership drops the purchase- and level-based titles
+  // immediately, and setting titlesResetAt means the hour-history titles
+  // (streaks, longest session, sub-scenario counts, etc.) go back to
+  // unearned too, to be built up again from here — without deleting a
+  // single archive entry or changing any recorded hours.
+  function resetAllProgress(){
+    if(!confirm('Reset the Dokkaebi Bag, coins, membership, sub-scenario numbering, and all titles?\n\nYour archive and recorded hours are kept exactly as logged. This cannot be undone.')) return;
+
+    const stats = gameStats(allEntries());
+    coinResetOffset += stats.balance;      // coin balance -> 0
+    membershipResetOffset = coinsSpent();  // membership -> Level 1
+    bag = { items: [], purchases: [] };    // empty the bag entirely
+    titlesResetAt = new Date().toISOString(); // titles must be re-earned from this moment on
+
+    seq = 1;
+    writeLocalSeq(1); // clear the stored floor first, or syncSeq below would pull it right back up
+    syncSeq();
+
+    persist();
+    render();
+    systemMsg('The Dokkaebi Bureau has wiped the bag, coins, membership, and titles. Sub-scenario numbering restarts at #1. Your archive is untouched.', 'gold');
   }
 
   function renderBag(){
@@ -2377,6 +2515,7 @@
   // ============================================================
   const budgetOverlay = document.getElementById('budgetModalOverlay');
   document.getElementById('logOpenBtn').addEventListener('click', () => budgetOverlay.classList.add('open'));
+  document.getElementById('fullResetBtn').addEventListener('click', resetAllProgress);
   document.getElementById('budgetCancelBtn').addEventListener('click', closeBudgetModal);
   budgetOverlay.addEventListener('click', (e) => { if(e.target === budgetOverlay) closeBudgetModal(); });
   function closeBudgetModal(){
@@ -2594,7 +2733,7 @@
     }
 
     renderBag();
-    renderTitles(stats);
+    renderTitles(titleStats());
     renderBoard();
     buildCalendar(monthEntries);
   }
@@ -2715,11 +2854,14 @@
 
   // ---- cloud sync ----
   function loadLocalAll(){
-    entries = readLocal();
+    entries = mergeEntriesByDate(readLocal());
     pending = readLocalPending();
     tasks = readLocalTasks();
     bag = readLocalBag();
     seq = readLocalSeq();
+    coinResetOffset = readLocalCoinOffset();
+    membershipResetOffset = readLocalMemberOffset();
+    titlesResetAt = readLocalTitleResetAt();
   }
 
   // ---- Firebase app (shared by Auth and Firestore — initialize exactly once) ----
@@ -2743,9 +2885,21 @@
         cloudEnabled = true;
         persist = async () => {
           writeLocal(entries); writeLocalPending(pending); writeLocalTasks(tasks); writeLocalBag(bag);
-          writeLocalSeq(seq); writeLocalBudget(budgetData); writeLocalBudgetArchive(budgetArchive);
+          writeLocalSeq(seq); writeLocalCoinOffset(coinResetOffset); writeLocalMemberOffset(membershipResetOffset);
+          writeLocalTitleResetAt(titlesResetAt);
+          writeLocalBudget(budgetData); writeLocalBudgetArchive(budgetArchive);
+
+          // Never push to the cloud before this device has seen what's
+          // actually there. A device opened from an old cached page (or
+          // one that's been asleep a while) could otherwise overwrite
+          // fresher work saved from somewhere else with its own stale
+          // copy the instant it loads. Local saves above still happen
+          // immediately either way — nothing is lost, the cloud push just
+          // waits until we've caught up.
+          if(!hasSyncedOnce) return;
+
           try{
-            await setDoc(docRef, { entries, pending, tasks, bag, seq, budget: budgetData, budgetArchive, updatedAt: Date.now() });
+            await setDoc(docRef, { entries, pending, tasks, bag, seq, coinResetOffset, membershipResetOffset, titlesResetAt, budget: budgetData, budgetArchive, updatedAt: Date.now() });
           }catch(e){
             console.error('Cloud save failed, changes are saved locally only for now.', e);
           }
@@ -2761,12 +2915,29 @@
         setSyncBadge();
 
         stopSync = onSnapshot(docRef, snap => {
+          // Once we've seen a real snapshot from Firestore, this device is
+          // caught up and may push changes. Before that point, pushes are
+          // held back locally — see the persist() gate below.
+          hasSyncedOnce = true;
+
           const data = snap.exists() ? snap.data() : null;
-          entries = (data && Array.isArray(data.entries)) ? data.entries : [];
+
+          // If the cloud document has no entries yet — e.g. this is the
+          // very first sync against a fresh Firebase project — the LOCAL
+          // history is the one that's actually true. Keep it and let it
+          // get pushed up, instead of wiping it to match an empty cloud.
+          let repair = false;
+          if(data && Array.isArray(data.entries)){
+            const merged = mergeEntriesByDate(data.entries);
+            repair = repair || merged.length !== data.entries.length;
+            entries = merged;
+          } else {
+            entries = mergeEntriesByDate(readLocal());
+            repair = repair || entries.length > 0;
+          }
 
           // The archive page writes without these fields; fall back to local
           // copies rather than losing the board, the bag or an open episode.
-          let repair = false;
           if(data && Array.isArray(data.pending)){ pending = data.pending; }
           else { pending = readLocalPending(); repair = repair || pending.length > 0; }
           if(data && Array.isArray(data.tasks)){ tasks = data.tasks.map(normalizeTask); }
@@ -2776,13 +2947,26 @@
           else { bag = readLocalBag(); repair = repair || (bag.items.length + bag.purchases.length) > 0; }
 
           const cloudSeq = Number(data && data.seq);
-          seq = Math.max(Number.isFinite(cloudSeq) ? cloudSeq : 1, readLocalSeq());
+          if(Number.isFinite(cloudSeq)){
+            seq = cloudSeq;
+          } else {
+            seq = readLocalSeq();
+            repair = repair || seq > 1;
+          }
+
+          const cloudCoinOffset = Number(data && data.coinResetOffset);
+          coinResetOffset = Number.isFinite(cloudCoinOffset) ? cloudCoinOffset : readLocalCoinOffset();
+          const cloudMemberOffset = Number(data && data.membershipResetOffset);
+          membershipResetOffset = Number.isFinite(cloudMemberOffset) ? cloudMemberOffset : readLocalMemberOffset();
+          titlesResetAt = (data && data.titlesResetAt) ? data.titlesResetAt : readLocalTitleResetAt();
 
           budgetData = (data && data.budget) ? data.budget : { month: currentMonthKey(), categories: emptyCategories(), total: 0 };
           budgetArchive = (data && data.budgetArchive) ? data.budgetArchive : {};
 
           writeLocal(entries); writeLocalPending(pending); writeLocalTasks(tasks);
           writeLocalBag(bag); writeLocalSeq(seq);
+          writeLocalCoinOffset(coinResetOffset); writeLocalMemberOffset(membershipResetOffset);
+          writeLocalTitleResetAt(titlesResetAt);
           writeLocalBudget(budgetData); writeLocalBudgetArchive(budgetArchive);
 
           const rolled = applyBudgetRollover();
