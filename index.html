@@ -1733,7 +1733,14 @@
 
   // ---- Coins & membership ----
   function coinsEarned(list){
-    return Math.round(totalHoursOf(list) * COINS_PER_HOUR + list.length * COINS_PER_SUB);
+    // Count sub-scenarios (some entries are merged day-entries with a .count)
+    const subs = (list || []).reduce((s, e) => {
+      if(!e) return s;
+      if(Number(e.count)) return s + Number(e.count);
+      if(Array.isArray(e.subScenarios) && e.subScenarios.length) return s + e.subScenarios.length;
+      return s + 1; // single unmerged entry (pending or old-style)
+    }, 0);
+    return Math.round(totalHoursOf(list) * COINS_PER_HOUR + subs * COINS_PER_SUB);
   }
   function coinsSpent(){
     return bag.purchases.reduce((s,p) => s + (Number(p.price) || 0), 0);
